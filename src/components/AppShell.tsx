@@ -11,6 +11,9 @@ import {
   FolderOpen,
   BadgeCheck,
   DraftingCompass,
+  Layers,
+  ClipboardCheck,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
@@ -18,13 +21,16 @@ const NAV = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/dashboard/permits", label: "Permits", icon: FileStack },
   { to: "/dashboard/roadmap", label: "Roadmap", icon: RouteIcon },
+  { to: "/dashboard/constraints", label: "Site Data", icon: Layers },
   { to: "/dashboard/checklist", label: "Checklist", icon: ListChecks },
+  { to: "/dashboard/prepare", label: "Prepare", icon: ClipboardCheck },
   { to: "/dashboard/fees", label: "Fees", icon: Receipt },
   { to: "/dashboard/timeline", label: "Timeline", icon: CalendarClock },
   { to: "/dashboard/reviews", label: "Reviews", icon: MessagesSquare },
   { to: "/dashboard/city", label: "City", icon: MessagesSquare },
   { to: "/dashboard/documents", label: "Documents", icon: FolderOpen },
   { to: "/dashboard/approvals", label: "Approvals", icon: BadgeCheck },
+  { to: "/dashboard/notifications", label: "Alerts", icon: Bell },
   { to: "/dashboard/design", label: "Design", icon: DraftingCompass },
 ] as const;
 

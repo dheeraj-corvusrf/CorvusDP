@@ -83,6 +83,8 @@ function SignIn() {
               session_id: readDpIntake().sessionId,
               terms_version: TERMS_VERSION,
               privacy_version: PRIVACY_VERSION,
+              // Recorded on the terms_acceptances row by handle_new_user (PRD 1.1.7.M).
+              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
             },
           },
         });
@@ -106,7 +108,7 @@ function SignIn() {
   // the first time a given Google account completes this, and just signs them in
   // on every return visit. Full-page redirect (to Google, then back to
   // `returnTo`), not an async call.
-  async function handleGoogleSignIn() {
+  async function handleOAuth(provider: "google" | "azure") {
     setError(null);
     if (!isSupabaseConfigured) {
       return setError("Accounts aren't set up in this deployment yet.");
@@ -116,13 +118,22 @@ function SignIn() {
     // the request to /sign-in before Supabase finishes reading the session out
     // of the redirect URL.
     const cb = `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`;
-    const redirectTo = returnTo === "/dashboard" ? cb : `${cb}?redirect=${encodeURIComponent(returnTo)}`;
+    const redirectTo =
+      returnTo === "/dashboard" ? cb : `${cb}?redirect=${encodeURIComponent(returnTo)}`;
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider,
       options: { redirectTo },
     });
-    if (oauthError) setError(oauthError.message);
+    if (oauthError) {
+      setError(
+        provider === "azure" && /provider is not enabled/i.test(oauthError.message)
+          ? "Microsoft sign-in isn't enabled for CorvusDP yet — use Google or email."
+          : oauthError.message,
+      );
+    }
   }
+  const handleGoogleSignIn = () => handleOAuth("google");
+  const handleMicrosoftSignIn = () => handleOAuth("azure");
 
   if (checkEmail) {
     return (
@@ -188,6 +199,15 @@ function SignIn() {
             />
           </svg>
           {mode === "signin" ? "Continue with Google" : "Sign up with Google"}
+        </button>
+        <button type="button" onClick={handleMicrosoftSignIn} className="btn-outline w-full">
+          <svg viewBox="0 0 21 21" className="h-4 w-4 shrink-0" aria-hidden="true">
+            <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+            <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+            <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+            <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+          </svg>
+          {mode === "signin" ? "Continue with Microsoft" : "Sign up with Microsoft"}
         </button>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <div className="h-px flex-1 bg-border" />

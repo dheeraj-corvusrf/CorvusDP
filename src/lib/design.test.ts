@@ -34,6 +34,30 @@ describe("generateDesignBrief", () => {
     expect(big.budgetHigh).toBeGreaterThan(small.budgetHigh);
   });
 
+  it("splits the design fee across disciplines that roughly sum to the total", () => {
+    const b = generateDesignBrief({
+      scope: "new_construction",
+      sector: "commercial",
+      buildingArea: "20000",
+    });
+    expect(b.costBreakdown.map((c) => c.discipline)).toEqual(
+      expect.arrayContaining(["Architectural", "Structural", "MEP", "Civil"]),
+    );
+    const sumLow = b.costBreakdown.reduce((n, c) => n + c.low, 0);
+    expect(Math.abs(sumLow - b.budgetLow)).toBeLessThan(b.budgetLow * 0.05);
+    expect(b.buildCostHigh).toBeGreaterThan(b.budgetHigh);
+  });
+
+  it("offers Standard / Custom / Phased approaches", () => {
+    const b = generateDesignBrief({ scope: "new_construction", buildingArea: "10000" });
+    expect(b.approaches.map((a) => a.name)).toEqual(["Standard", "Custom", "Phased"]);
+  });
+
+  it("drops Civil from the fee split for an interior fit-out", () => {
+    const b = generateDesignBrief({ scope: "interior_fit_out", buildingArea: "6000" });
+    expect(b.costBreakdown.some((c) => c.discipline === "Civil")).toBe(false);
+  });
+
   it("derives a space plan from a rooms list", () => {
     const brief = generateDesignBrief({
       scope: "new_construction",

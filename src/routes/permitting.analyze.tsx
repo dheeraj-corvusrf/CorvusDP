@@ -4,6 +4,7 @@ import { ArrowRight, ArrowLeft, Lock, Loader2, MapPin } from "lucide-react";
 import {
   readDpIntake,
   updateDpIntake,
+  type DpIntakeState,
   type ProjectIntent,
   type PropertySector,
 } from "@/lib/dp-intake";
@@ -12,7 +13,8 @@ import { statusLabel } from "@/lib/zoning";
 import { groupByCategory } from "@/lib/permits";
 import { currency, currencyRange, weeksLabel, monthsFromWeeks } from "@/lib/format";
 import { captureLead } from "@/lib/leads";
-import { saveProjectFromIntake } from "@/lib/projects";
+import { saveProjectFromIntake, findProjectByAddress } from "@/lib/projects";
+import { availabilityLabel } from "@/lib/constraints";
 import { useAuth } from "@/lib/auth";
 import {
   StepRail,
@@ -41,13 +43,15 @@ const INTENTS: { value: ProjectIntent; label: string }[] = [
 function Analyze() {
   const nav = useNavigate();
   const { user } = useAuth();
-  const [state, setState] = useState(() => {
+  const [state, setState] = useState<DpIntakeState>(() => {
     const s = readDpIntake();
-    return { ...s, track: "permitting" as const };
+    return { ...s, track: "permitting" };
   });
   const [step, setStep] = useState(state.step && state.step <= 4 ? state.step : 0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existingProjectId, setExistingProjectId] = useState<string | null>(null);
+  const [confirmedNew, setConfirmedNew] = useState(false);
 
   function patch(next: Parameters<typeof updateDpIntake>[0]) {
     const merged = updateDpIntake({ ...next, track: "permitting" });
@@ -81,6 +85,13 @@ function Analyze() {
     }
     setSaving(true);
     try {
+      // Existing-project detection (PRD 1.1.7.H).
+      const existing = await findProjectByAddress(user.id, state.property.address);
+      if (existing && !confirmedNew) {
+        setExistingProjectId(existing.id);
+        setSaving(false);
+        return;
+      }
       await saveProjectFromIntake(user.id, state, analysis);
       nav({ to: "/dashboard" });
     } catch (e) {
@@ -107,7 +118,12 @@ function Analyze() {
         <ZoningStep analysis={analysis} onBack={() => go(1)} onNext={() => go(3)} />
       )}
       {step === 3 && analysis && (
-        <FeasibilityStep analysis={analysis} onBack={() => go(2)} onNext={() => go(4)} />
+        <FeasibilityStep
+          analysis={analysis}
+          address={state.property.address ?? state.property.city}
+          onBack={() => go(2)}
+          onNext={() => go(4)}
+        />
       )}
       {step === 4 && analysis && (
         <ReportStep
@@ -118,6 +134,32 @@ function Analyze() {
           onBack={() => go(3)}
           onPrimary={handleSaveOrSignup}
         />
+      )}
+
+      {existingProjectId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-fade-in">
+          <div className="card-elev max-w-sm p-6 text-center">
+            <h3 className="font-serif text-lg font-semibold">You already have a project here</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              We found an existing project for this property. Continue it, or start a new one?
+            </p>
+            <div className="mt-5 grid gap-2">
+              <button className="btn-accent" onClick={() => nav({ to: "/dashboard" })}>
+                Continue existing project
+              </button>
+              <button
+                className="btn-outline"
+                onClick={() => {
+                  setExistingProjectId(null);
+                  setConfirmedNew(true);
+                  setTimeout(handleSaveOrSignup, 0);
+                }}
+              >
+                Create a new project
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -422,14 +464,16 @@ function ZoningStep({
 
 function FeasibilityStep({
   analysis,
+  address,
   onBack,
   onNext,
 }: {
   analysis: ReturnType<typeof runPermittingAnalysis>;
+  address?: string;
   onBack: () => void;
   onNext: () => void;
 }) {
-  const { feasibility } = analysis;
+  const { feasibility, zoning } = analysis;
   return (
     <Section
       title="Feasibility analysis"
@@ -437,6 +481,20 @@ function FeasibilityStep({
         <Pill tone={feasibilityTone(feasibility.status)}>{statusLabel(feasibility.status)}</Pill>
       }
     >
+      <div className="mb-3 grid gap-2 rounded-lg border border-border p-3 text-sm sm:grid-cols-3">
+        <span>
+          <span className="text-muted-foreground">Property: </span>
+          {address || "—"}
+        </span>
+        <span>
+          <span className="text-muted-foreground">Zoning: </span>
+          {zoning.code || "not provided"} ({zoning.label})
+        </span>
+        <span>
+          <span className="text-muted-foreground">Status: </span>
+          {statusLabel(feasibility.status)}
+        </span>
+      </div>
       <p className="text-sm">{feasibility.summary}</p>
       <div className="mt-2 text-xs text-muted-foreground">
         Confidence: {(feasibility.confidence * 100).toFixed(0)}%
@@ -536,6 +594,44 @@ function ReportStep({
             </li>
           ))}
         </ul>
+      </Section>
+
+      <Section
+        title="Site constraints"
+        subtitle="Utilities & constraints to design around (estimate)."
+      >
+        <div className="grid gap-2 sm:grid-cols-2">
+          {analysis.constraints.utilities.map((u) => (
+            <div
+              key={u.name}
+              className="flex items-center justify-between rounded-lg border border-border p-2.5 text-sm"
+            >
+              <span className="font-medium">{u.name}</span>
+              <Pill
+                tone={
+                  u.status === "likely_available"
+                    ? "green"
+                    : u.status === "likely_constrained"
+                      ? "red"
+                      : "amber"
+                }
+              >
+                {availabilityLabel(u.status)}
+              </Pill>
+            </div>
+          ))}
+        </div>
+        {analysis.constraints.criticalWarnings.length > 0 && (
+          <ul className="mt-3 grid gap-1 text-xs text-red-600">
+            {analysis.constraints.criticalWarnings.map((w, i) => (
+              <li key={i}>⚠ {w}</li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          Full constraints list, pre-application meeting agenda, and a downloadable site summary are
+          on your dashboard after you save.
+        </p>
       </Section>
 
       <div className="relative">

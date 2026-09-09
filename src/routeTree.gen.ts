@@ -32,10 +32,13 @@ import { Route as DashboardLayoutIndexRouteImport } from './routes/dashboard/_la
 import { Route as DashboardLayoutApprovalsRouteImport } from './routes/dashboard/_layout.approvals'
 import { Route as DashboardLayoutChecklistRouteImport } from './routes/dashboard/_layout.checklist'
 import { Route as DashboardLayoutCityRouteImport } from './routes/dashboard/_layout.city'
+import { Route as DashboardLayoutConstraintsRouteImport } from './routes/dashboard/_layout.constraints'
 import { Route as DashboardLayoutDesignRouteImport } from './routes/dashboard/_layout.design'
 import { Route as DashboardLayoutDocumentsRouteImport } from './routes/dashboard/_layout.documents'
 import { Route as DashboardLayoutFeesRouteImport } from './routes/dashboard/_layout.fees'
+import { Route as DashboardLayoutNotificationsRouteImport } from './routes/dashboard/_layout.notifications'
 import { Route as DashboardLayoutPermitsRouteImport } from './routes/dashboard/_layout.permits'
+import { Route as DashboardLayoutPrepareRouteImport } from './routes/dashboard/_layout.prepare'
 import { Route as DashboardLayoutReviewsRouteImport } from './routes/dashboard/_layout.reviews'
 import { Route as DashboardLayoutRoadmapRouteImport } from './routes/dashboard/_layout.roadmap'
 import { Route as DashboardLayoutSettingsRouteImport } from './routes/dashboard/_layout.settings'
@@ -158,6 +161,12 @@ const DashboardLayoutCityRoute = DashboardLayoutCityRouteImport.update({
   path: '/city',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardLayoutConstraintsRoute =
+  DashboardLayoutConstraintsRouteImport.update({
+    id: '/constraints',
+    path: '/constraints',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardLayoutDesignRoute = DashboardLayoutDesignRouteImport.update({
   id: '/design',
   path: '/design',
@@ -174,9 +183,20 @@ const DashboardLayoutFeesRoute = DashboardLayoutFeesRouteImport.update({
   path: '/fees',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
+const DashboardLayoutNotificationsRoute =
+  DashboardLayoutNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => DashboardLayoutRoute,
+  } as any)
 const DashboardLayoutPermitsRoute = DashboardLayoutPermitsRouteImport.update({
   id: '/permits',
   path: '/permits',
+  getParentRoute: () => DashboardLayoutRoute,
+} as any)
+const DashboardLayoutPrepareRoute = DashboardLayoutPrepareRouteImport.update({
+  id: '/prepare',
+  path: '/prepare',
   getParentRoute: () => DashboardLayoutRoute,
 } as any)
 const DashboardLayoutReviewsRoute = DashboardLayoutReviewsRouteImport.update({
@@ -223,10 +243,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/approvals': typeof DashboardLayoutApprovalsRoute
   '/dashboard/checklist': typeof DashboardLayoutChecklistRoute
   '/dashboard/city': typeof DashboardLayoutCityRoute
+  '/dashboard/constraints': typeof DashboardLayoutConstraintsRoute
   '/dashboard/design': typeof DashboardLayoutDesignRoute
   '/dashboard/documents': typeof DashboardLayoutDocumentsRoute
   '/dashboard/fees': typeof DashboardLayoutFeesRoute
+  '/dashboard/notifications': typeof DashboardLayoutNotificationsRoute
   '/dashboard/permits': typeof DashboardLayoutPermitsRoute
+  '/dashboard/prepare': typeof DashboardLayoutPrepareRoute
   '/dashboard/reviews': typeof DashboardLayoutReviewsRoute
   '/dashboard/roadmap': typeof DashboardLayoutRoadmapRoute
   '/dashboard/settings': typeof DashboardLayoutSettingsRoute
@@ -255,10 +278,13 @@ export interface FileRoutesByTo {
   '/dashboard/approvals': typeof DashboardLayoutApprovalsRoute
   '/dashboard/checklist': typeof DashboardLayoutChecklistRoute
   '/dashboard/city': typeof DashboardLayoutCityRoute
+  '/dashboard/constraints': typeof DashboardLayoutConstraintsRoute
   '/dashboard/design': typeof DashboardLayoutDesignRoute
   '/dashboard/documents': typeof DashboardLayoutDocumentsRoute
   '/dashboard/fees': typeof DashboardLayoutFeesRoute
+  '/dashboard/notifications': typeof DashboardLayoutNotificationsRoute
   '/dashboard/permits': typeof DashboardLayoutPermitsRoute
+  '/dashboard/prepare': typeof DashboardLayoutPrepareRoute
   '/dashboard/reviews': typeof DashboardLayoutReviewsRoute
   '/dashboard/roadmap': typeof DashboardLayoutRoadmapRoute
   '/dashboard/settings': typeof DashboardLayoutSettingsRoute
@@ -289,10 +315,13 @@ export interface FileRoutesById {
   '/dashboard/_layout/approvals': typeof DashboardLayoutApprovalsRoute
   '/dashboard/_layout/checklist': typeof DashboardLayoutChecklistRoute
   '/dashboard/_layout/city': typeof DashboardLayoutCityRoute
+  '/dashboard/_layout/constraints': typeof DashboardLayoutConstraintsRoute
   '/dashboard/_layout/design': typeof DashboardLayoutDesignRoute
   '/dashboard/_layout/documents': typeof DashboardLayoutDocumentsRoute
   '/dashboard/_layout/fees': typeof DashboardLayoutFeesRoute
+  '/dashboard/_layout/notifications': typeof DashboardLayoutNotificationsRoute
   '/dashboard/_layout/permits': typeof DashboardLayoutPermitsRoute
+  '/dashboard/_layout/prepare': typeof DashboardLayoutPrepareRoute
   '/dashboard/_layout/reviews': typeof DashboardLayoutReviewsRoute
   '/dashboard/_layout/roadmap': typeof DashboardLayoutRoadmapRoute
   '/dashboard/_layout/settings': typeof DashboardLayoutSettingsRoute
@@ -324,10 +353,13 @@ export interface FileRouteTypes {
     | '/dashboard/approvals'
     | '/dashboard/checklist'
     | '/dashboard/city'
+    | '/dashboard/constraints'
     | '/dashboard/design'
     | '/dashboard/documents'
     | '/dashboard/fees'
+    | '/dashboard/notifications'
     | '/dashboard/permits'
+    | '/dashboard/prepare'
     | '/dashboard/reviews'
     | '/dashboard/roadmap'
     | '/dashboard/settings'
@@ -356,10 +388,13 @@ export interface FileRouteTypes {
     | '/dashboard/approvals'
     | '/dashboard/checklist'
     | '/dashboard/city'
+    | '/dashboard/constraints'
     | '/dashboard/design'
     | '/dashboard/documents'
     | '/dashboard/fees'
+    | '/dashboard/notifications'
     | '/dashboard/permits'
+    | '/dashboard/prepare'
     | '/dashboard/reviews'
     | '/dashboard/roadmap'
     | '/dashboard/settings'
@@ -389,10 +424,13 @@ export interface FileRouteTypes {
     | '/dashboard/_layout/approvals'
     | '/dashboard/_layout/checklist'
     | '/dashboard/_layout/city'
+    | '/dashboard/_layout/constraints'
     | '/dashboard/_layout/design'
     | '/dashboard/_layout/documents'
     | '/dashboard/_layout/fees'
+    | '/dashboard/_layout/notifications'
     | '/dashboard/_layout/permits'
+    | '/dashboard/_layout/prepare'
     | '/dashboard/_layout/reviews'
     | '/dashboard/_layout/roadmap'
     | '/dashboard/_layout/settings'
@@ -585,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLayoutCityRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/dashboard/_layout/constraints': {
+      id: '/dashboard/_layout/constraints'
+      path: '/constraints'
+      fullPath: '/dashboard/constraints'
+      preLoaderRoute: typeof DashboardLayoutConstraintsRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/dashboard/_layout/design': {
       id: '/dashboard/_layout/design'
       path: '/design'
@@ -606,11 +651,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLayoutFeesRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
+    '/dashboard/_layout/notifications': {
+      id: '/dashboard/_layout/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof DashboardLayoutNotificationsRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
     '/dashboard/_layout/permits': {
       id: '/dashboard/_layout/permits'
       path: '/permits'
       fullPath: '/dashboard/permits'
       preLoaderRoute: typeof DashboardLayoutPermitsRouteImport
+      parentRoute: typeof DashboardLayoutRoute
+    }
+    '/dashboard/_layout/prepare': {
+      id: '/dashboard/_layout/prepare'
+      path: '/prepare'
+      fullPath: '/dashboard/prepare'
+      preLoaderRoute: typeof DashboardLayoutPrepareRouteImport
       parentRoute: typeof DashboardLayoutRoute
     }
     '/dashboard/_layout/reviews': {
@@ -648,10 +707,13 @@ interface DashboardLayoutRouteChildren {
   DashboardLayoutApprovalsRoute: typeof DashboardLayoutApprovalsRoute
   DashboardLayoutChecklistRoute: typeof DashboardLayoutChecklistRoute
   DashboardLayoutCityRoute: typeof DashboardLayoutCityRoute
+  DashboardLayoutConstraintsRoute: typeof DashboardLayoutConstraintsRoute
   DashboardLayoutDesignRoute: typeof DashboardLayoutDesignRoute
   DashboardLayoutDocumentsRoute: typeof DashboardLayoutDocumentsRoute
   DashboardLayoutFeesRoute: typeof DashboardLayoutFeesRoute
+  DashboardLayoutNotificationsRoute: typeof DashboardLayoutNotificationsRoute
   DashboardLayoutPermitsRoute: typeof DashboardLayoutPermitsRoute
+  DashboardLayoutPrepareRoute: typeof DashboardLayoutPrepareRoute
   DashboardLayoutReviewsRoute: typeof DashboardLayoutReviewsRoute
   DashboardLayoutRoadmapRoute: typeof DashboardLayoutRoadmapRoute
   DashboardLayoutSettingsRoute: typeof DashboardLayoutSettingsRoute
@@ -663,10 +725,13 @@ const DashboardLayoutRouteChildren: DashboardLayoutRouteChildren = {
   DashboardLayoutApprovalsRoute: DashboardLayoutApprovalsRoute,
   DashboardLayoutChecklistRoute: DashboardLayoutChecklistRoute,
   DashboardLayoutCityRoute: DashboardLayoutCityRoute,
+  DashboardLayoutConstraintsRoute: DashboardLayoutConstraintsRoute,
   DashboardLayoutDesignRoute: DashboardLayoutDesignRoute,
   DashboardLayoutDocumentsRoute: DashboardLayoutDocumentsRoute,
   DashboardLayoutFeesRoute: DashboardLayoutFeesRoute,
+  DashboardLayoutNotificationsRoute: DashboardLayoutNotificationsRoute,
   DashboardLayoutPermitsRoute: DashboardLayoutPermitsRoute,
+  DashboardLayoutPrepareRoute: DashboardLayoutPrepareRoute,
   DashboardLayoutReviewsRoute: DashboardLayoutReviewsRoute,
   DashboardLayoutRoadmapRoute: DashboardLayoutRoadmapRoute,
   DashboardLayoutSettingsRoute: DashboardLayoutSettingsRoute,

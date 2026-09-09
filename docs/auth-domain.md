@@ -13,7 +13,7 @@ this repo — both are console / DNS / billing tasks.
 ## Option A — free: brand + publish the Google OAuth consent screen
 
 For a **published** OAuth app Google shows the **app name** ("Continue to
-CorvusDP") instead of the raw redirect host. For an app still in *Testing* it
+CorvusDP") instead of the raw redirect host. For an app still in _Testing_ it
 shows the host.
 
 1. Google Cloud Console → the project that owns client
@@ -25,7 +25,7 @@ shows the host.
    - **Privacy policy**: `https://corvusre.com/corvusdp/privacy`
    - **Terms of service**: `https://corvusre.com/corvusdp/terms`
    - **Authorized domains**: `corvusre.com`, `supabase.co`
-3. **Publish app** (Publishing status → *In production*). Basic scopes
+3. **Publish app** (Publishing status → _In production_). Basic scopes
    (email, profile, openid) don't need Google's verification review, so this
    takes effect immediately.
 
