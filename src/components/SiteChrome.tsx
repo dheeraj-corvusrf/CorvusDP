@@ -66,7 +66,7 @@ export function SiteNav() {
         <Link to="/" className="flex items-center gap-2">
           <LogoMark />
           <span className="font-serif text-lg font-semibold tracking-tight">
-            Corvus<span className="text-[oklch(0.55_0.16_55)]">DP</span>
+            Corvus<span className="text-accent">DP</span>
           </span>
         </Link>
 
@@ -212,7 +212,7 @@ export function SiteFooter() {
 function LogoMark() {
   return (
     <span
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand text-brand-foreground"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-foreground"
       aria-hidden
     >
       <svg
