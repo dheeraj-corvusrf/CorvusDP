@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clock, Info } from "lucide-react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
 import { readDpIntake } from "@/lib/dp-intake";
 import {
   TERMS_VERSION,
@@ -28,12 +29,19 @@ export const Route = createFileRoute("/sign-in")({
 function SignIn() {
   const nav = useNavigate();
   const sp = Route.useSearch();
+  const { user: authedUser } = useAuth();
 
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   let cleaned = sp.redirect ?? "";
   if (base && cleaned.startsWith(`${base}/`)) cleaned = cleaned.slice(base.length);
   const returnTo =
     cleaned && cleaned.startsWith("/") && !cleaned.startsWith("//") ? cleaned : "/dashboard";
+
+  // Already signed in (e.g. landed back here with a session in the URL, or an
+  // open tab) — don't sit on the sign-in card, go where they were headed.
+  useEffect(() => {
+    if (authedUser) nav({ to: returnTo, replace: true });
+  }, [authedUser, nav, returnTo]);
 
   const [mode, setMode] = useState<"signin" | "signup">(sp.mode === "signup" ? "signup" : "signin");
   const [firstName, setFirstName] = useState("");
@@ -103,7 +111,12 @@ function SignIn() {
     if (!isSupabaseConfigured) {
       return setError("Accounts aren't set up in this deployment yet.");
     }
-    const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}${returnTo.slice(1)}`;
+    // Land on the un-guarded /auth/callback page (carrying where to go next),
+    // not straight onto /dashboard — otherwise the dashboard guard can bounce
+    // the request to /sign-in before Supabase finishes reading the session out
+    // of the redirect URL.
+    const cb = `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`;
+    const redirectTo = returnTo === "/dashboard" ? cb : `${cb}?redirect=${encodeURIComponent(returnTo)}`;
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },

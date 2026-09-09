@@ -22,6 +22,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as DashboardLayoutRouteImport } from './routes/dashboard/_layout'
 import { Route as DesignIndexRouteImport } from './routes/design.index'
 import { Route as DesignAnalyzeRouteImport } from './routes/design.analyze'
@@ -103,6 +104,11 @@ const SignInRoute = SignInRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/dashboard': typeof DashboardLayoutRouteWithChildren
   '/design/analyze': typeof DesignAnalyzeRoute
   '/permitting/analyze': typeof PermittingAnalyzeRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/design/analyze': typeof DesignAnalyzeRoute
   '/permitting/analyze': typeof PermittingAnalyzeRoute
   '/design': typeof DesignIndexRoute
@@ -272,6 +280,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/dashboard/_layout': typeof DashboardLayoutRouteWithChildren
   '/design/analyze': typeof DesignAnalyzeRoute
   '/permitting/analyze': typeof PermittingAnalyzeRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/terms'
+    | '/auth/callback'
     | '/dashboard'
     | '/design/analyze'
     | '/permitting/analyze'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/terms'
+    | '/auth/callback'
     | '/design/analyze'
     | '/permitting/analyze'
     | '/design'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/terms'
+    | '/auth/callback'
     | '/dashboard/_layout'
     | '/design/analyze'
     | '/permitting/analyze'
@@ -402,6 +414,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   DashboardLayoutRoute: typeof DashboardLayoutRouteWithChildren
   DesignAnalyzeRoute: typeof DesignAnalyzeRoute
   PermittingAnalyzeRoute: typeof PermittingAnalyzeRoute
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/_layout': {
@@ -672,6 +692,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   DashboardLayoutRoute: DashboardLayoutRouteWithChildren,
   DesignAnalyzeRoute: DesignAnalyzeRoute,
   PermittingAnalyzeRoute: PermittingAnalyzeRoute,
