@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Loader2, Lock } from "lucide-react";
 import {
   readDpIntake,
   updateDpIntake,
+  type DpIntakeState,
   type DesignScope,
   type PropertySector,
 } from "@/lib/dp-intake";
@@ -30,7 +31,7 @@ const SCOPES: { value: DesignScope; label: string }[] = [
 function DesignAnalyze() {
   const nav = useNavigate();
   const { user } = useAuth();
-  const [state, setState] = useState(() => ({ ...readDpIntake(), track: "design" as const }));
+  const [state, setState] = useState<DpIntakeState>(() => ({ ...readDpIntake(), track: "design" }));
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +191,13 @@ function DesignAnalyze() {
                   className={inputCls}
                   value={d.floors ?? ""}
                   onChange={(e) => patch({ design: { floors: e.target.value } })}
+                />
+              </Field>
+              <Field label="Approximate site area" hint="e.g. 1.5 acres or 65,000 sf">
+                <input
+                  className={inputCls}
+                  value={d.approxSiteArea ?? ""}
+                  onChange={(e) => patch({ design: { approxSiteArea: e.target.value } })}
                 />
               </Field>
             </div>

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useActiveProjectBundle } from "@/hooks/use-project";
 import { setChecklistDone } from "@/lib/projects";
 import { checklistCompletion } from "@/lib/checklist";
+import type { ChecklistRow } from "@/lib/projects";
 import { Section, EmptyProject, Loading } from "@/components/dp-ui";
 
 export const Route = createFileRoute("/dashboard/_layout/checklist")({
@@ -10,17 +11,45 @@ export const Route = createFileRoute("/dashboard/_layout/checklist")({
   component: Checklist,
 });
 
+function Item({
+  item,
+  onToggle,
+}: {
+  item: ChecklistRow;
+  onToggle: (id: string, done: boolean) => void;
+}) {
+  return (
+    <li className="flex items-start gap-2">
+      <input
+        type="checkbox"
+        checked={item.done}
+        onChange={(e) => onToggle(item.id, e.target.checked)}
+        className="mt-0.5"
+      />
+      <span className={item.done ? "text-muted-foreground line-through" : ""}>
+        {item.label}
+        <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {item.grp}
+        </span>
+        {!item.required && <span className="ml-1 text-xs text-muted-foreground">(optional)</span>}
+      </span>
+    </li>
+  );
+}
+
 function Checklist() {
   const { loading, hasProject, project, bundle, refetch } = useActiveProjectBundle();
 
+  const all = bundle?.checklist ?? [];
+  const preApp = useMemo(() => all.filter((c) => c.kind === "pre_app"), [all]);
   const byPermit = useMemo(() => {
-    const map: Record<string, typeof bundle.checklist> = {};
-    for (const item of bundle?.checklist ?? []) {
+    const map: Record<string, ChecklistRow[]> = {};
+    for (const item of all.filter((c) => c.kind !== "pre_app")) {
       const key = item.permit_key ?? "general";
       (map[key] ??= []).push(item);
     }
     return map;
-  }, [bundle]);
+  }, [all]);
 
   if (loading) return <Loading />;
   if (!hasProject || !project) return <EmptyProject />;
@@ -28,30 +57,35 @@ function Checklist() {
   const permitName = (key: string) =>
     (bundle?.permits ?? []).find((p) => p.permit_key === key)?.name ?? key;
 
-  const overall = checklistCompletion(bundle?.checklist ?? []);
-  const preApp = project.analysis?.preApp ?? [];
+  async function toggle(id: string, done: boolean) {
+    await setChecklistDone(id, done);
+    refetch();
+  }
+
+  const submissionItems = all.filter((c) => c.kind !== "pre_app");
+  const overall = checklistCompletion(submissionItems);
+  const preAppPct = checklistCompletion(preApp);
 
   return (
     <div className="grid gap-5">
       <Section
         title="Pre-application checklist"
-        subtitle="Complete before submitting anything (PRD 1.1.13)"
+        subtitle={`Complete before submitting anything (PRD 1.1.13) · ${preAppPct}% done`}
+        right={
+          <button className="btn-outline text-sm" onClick={() => window.print()}>
+            Export / print
+          </button>
+        }
       >
-        <ul className="grid gap-1.5 text-sm">
-          {preApp.map((i, k) => (
-            <li key={k} className="flex items-start gap-2">
-              <span
-                className={`mt-0.5 inline-block h-4 w-4 shrink-0 rounded border ${i.required ? "border-accent" : "border-border"}`}
-              />
-              <span>
-                {i.label}
-                {!i.required && (
-                  <span className="ml-1 text-xs text-muted-foreground">(optional)</span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {preApp.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No pre-application items.</p>
+        ) : (
+          <ul className="grid gap-1.5 text-sm">
+            {preApp.map((item) => (
+              <Item key={item.id} item={item} onToggle={toggle} />
+            ))}
+          </ul>
+        )}
       </Section>
 
       <Section
@@ -69,26 +103,7 @@ function Checklist() {
                 </div>
                 <ul className="mt-2 grid gap-1.5 text-sm">
                   {items.map((item) => (
-                    <li key={item.id} className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        checked={item.done}
-                        onChange={async (e) => {
-                          await setChecklistDone(item.id, e.target.checked);
-                          refetch();
-                        }}
-                        className="mt-0.5"
-                      />
-                      <span className={item.done ? "text-muted-foreground line-through" : ""}>
-                        {item.label}
-                        <span className="ml-2 rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
-                          {item.grp}
-                        </span>
-                        {!item.required && (
-                          <span className="ml-1 text-xs text-muted-foreground">(optional)</span>
-                        )}
-                      </span>
-                    </li>
+                    <Item key={item.id} item={item} onToggle={toggle} />
                   ))}
                 </ul>
               </div>

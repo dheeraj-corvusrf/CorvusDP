@@ -39,6 +39,10 @@ describe("runPermittingAnalysis", () => {
     expect(a.fees.totalHigh).toBeGreaterThan(a.fees.totalLow);
     expect(a.timeline.totalWeeksMax).toBeGreaterThan(a.timeline.totalWeeksMin);
     expect(a.preApp.length).toBeGreaterThan(4);
+    expect(a.preAppMeeting.agenda.length).toBeGreaterThan(3);
+    expect(a.preAppMeeting.bring.length).toBeGreaterThan(3);
+    expect(a.responsibilityMatrix.some((r) => /Architect/.test(r.consultant))).toBe(true);
+    expect(a.constraints.utilities.length).toBeGreaterThanOrEqual(4);
   });
 
   it("flags rezoning for a commercial use on residential-zoned land", () => {

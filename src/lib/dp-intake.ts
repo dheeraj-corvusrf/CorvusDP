@@ -35,6 +35,7 @@ export type ProjectDefinition = {
 export type DesignRequirements = {
   scope?: DesignScope;
   sector?: PropertySector;
+  approxSiteArea?: string;
   buildingArea?: string;
   floors?: string;
   rooms?: string;

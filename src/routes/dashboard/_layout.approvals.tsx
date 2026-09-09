@@ -73,6 +73,30 @@ function Approvals() {
                     />
                   </span>
                 </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Approval document URL:{" "}
+                  <input
+                    defaultValue={p.approval_doc_url ?? ""}
+                    placeholder="paste a link, or upload on the Documents tab"
+                    onBlur={async (e) => {
+                      if (e.target.value !== (p.approval_doc_url ?? "")) {
+                        await updatePermit(p.id, { approval_doc_url: e.target.value });
+                        refetch();
+                      }
+                    }}
+                    className="w-full rounded border border-input bg-background px-1"
+                  />
+                  {p.approval_doc_url && (
+                    <a
+                      href={p.approval_doc_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 text-accent underline underline-offset-2"
+                    >
+                      open
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>

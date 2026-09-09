@@ -19,7 +19,15 @@ import { mapAgencies, type AgencyAssignment } from "./agencies";
 import { buildRoadmap, type RoadmapPhase } from "./roadmap";
 import { estimateFees, type FeeEstimate } from "./fees";
 import { estimateTimeline, type TimelineEstimate } from "./timeline";
-import { preApplicationChecklist, type PreAppItem } from "./checklist";
+import {
+  preApplicationChecklist,
+  preApplicationMeeting,
+  designResponsibilityMatrix,
+  type PreAppItem,
+  type PreAppMeeting,
+  type ResponsibilityRow,
+} from "./checklist";
+import { deriveSiteConstraints, type SiteConstraints } from "./constraints";
 import { parseArea } from "./format";
 
 export type PermittingAnalysis = {
@@ -33,6 +41,9 @@ export type PermittingAnalysis = {
   fees: FeeEstimate;
   timeline: TimelineEstimate;
   preApp: PreAppItem[];
+  preAppMeeting: PreAppMeeting;
+  responsibilityMatrix: ResponsibilityRow[];
+  constraints: SiteConstraints;
 };
 
 export function runPermittingAnalysis(intake: DpIntakeState): PermittingAnalysis {
@@ -73,6 +84,13 @@ export function runPermittingAnalysis(intake: DpIntakeState): PermittingAnalysis
   });
   const timeline = estimateTimeline({ permits, complexity, jurisdiction });
   const preApp = preApplicationChecklist(jurisdiction, permits);
+  const constraints = deriveSiteConstraints({
+    jurisdiction,
+    zoning,
+    intent: project.intent,
+    lotSize: project.lotSize ?? property.approxSiteArea,
+    isEtj,
+  });
 
   return {
     jurisdiction,
@@ -85,5 +103,8 @@ export function runPermittingAnalysis(intake: DpIntakeState): PermittingAnalysis
     fees,
     timeline,
     preApp,
+    preAppMeeting: preApplicationMeeting(jurisdiction, permits),
+    responsibilityMatrix: designResponsibilityMatrix(permits),
+    constraints,
   };
 }

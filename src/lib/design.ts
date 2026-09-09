@@ -9,9 +9,16 @@ export type DesignBrief = {
   totalWeeksMax: number;
   budgetLow: number;
   budgetHigh: number;
+  /** design fee split by discipline (PRD 1.2.10.A) */
+  costBreakdown: { discipline: string; low: number; high: number }[];
+  /** rough total constructed cost, separate from design fees */
+  buildCostLow: number;
+  buildCostHigh: number;
   costDrivers: string[];
   spacePlan: { zone: string; note: string }[];
   recommendations: string[];
+  /** suggested delivery approaches (PRD 1.2.12.A) */
+  approaches: { name: string; summary: string; bestWhen: string }[];
 };
 
 const SCOPE_LABEL: Record<DesignScope, string> = {
@@ -57,6 +64,31 @@ export function generateDesignBrief(req: DesignRequirements): DesignBrief {
   const budgetLow = Math.round(sf * feeBand[0] * sizeFactor);
   const budgetHigh = Math.round(sf * feeBand[1] * sizeFactor);
 
+  // Split the design fee across disciplines (rough industry proportions).
+  const split: [string, number][] = full
+    ? [
+        ["Architectural", 0.4],
+        ["Structural", 0.15],
+        ["MEP", 0.22],
+        ["Civil", 0.15],
+        ["Survey & Landscape", 0.08],
+      ]
+    : [
+        ["Architectural", 0.62],
+        ["Structural", 0.12],
+        ["MEP", 0.26],
+      ];
+  const costBreakdown = split.map(([discipline, pct]) => ({
+    discipline,
+    low: Math.round(budgetLow * pct),
+    high: Math.round(budgetHigh * pct),
+  }));
+
+  // Rough constructed cost, independent of the design fee.
+  const buildBand = sector === "commercial" ? [180, 320] : [150, 270];
+  const buildCostLow = Math.round(sf * buildBand[0]);
+  const buildCostHigh = Math.round(sf * buildBand[1]);
+
   const timeline = [
     {
       phase: "Concept design",
@@ -91,6 +123,27 @@ export function generateDesignBrief(req: DesignRequirements): DesignBrief {
     totalWeeksMax,
     budgetLow,
     budgetHigh,
+    costBreakdown,
+    buildCostLow,
+    buildCostHigh,
+    approaches: [
+      {
+        name: "Standard",
+        summary: "One coordinated pass through concept → development → permit set.",
+        bestWhen:
+          "Schedule matters and the program is well defined — fastest and most cost-effective.",
+      },
+      {
+        name: "Custom",
+        summary: "Extra concept iterations and design study before locking the direction.",
+        bestWhen: "Signature building, unusual site, or the program is still being shaped.",
+      },
+      {
+        name: "Phased",
+        summary: "Split the fee and scope into stages, each authorized on its own.",
+        bestWhen: "Budget or entitlement uncertainty — stop or adjust between stages.",
+      },
+    ],
     costDrivers: [
       "Size — larger buildings raise total fee but lower the $/sf rate.",
       "Quality — standard vs. premium finishes and envelope.",

@@ -84,6 +84,71 @@ export function buildPermitChecklist(permit: PermitItem, _jur: JurisdictionInfo)
   ];
 }
 
+// Design Responsibility Matrix (PRD 1.1.21) — who owns each deliverable in the
+// permit package.
+export type ResponsibilityRow = {
+  requirement: string;
+  consultant: string;
+};
+
+export function designResponsibilityMatrix(permits: PermitItem[]): ResponsibilityRow[] {
+  const rows: ResponsibilityRow[] = [];
+  const has = (id: string) => permits.some((p) => p.id === id);
+  if (has("plat")) {
+    rows.push({ requirement: "Boundary & topographic survey", consultant: "Land Surveyor" });
+    rows.push({
+      requirement: "Plat drawing & metes/bounds",
+      consultant: "Land Surveyor / Civil Engineer",
+    });
+    rows.push({
+      requirement: "Title commitment & tax certificate",
+      consultant: "Owner / Title company",
+    });
+  }
+  if (has("site") || has("civil") || has("grading")) {
+    rows.push({ requirement: "Site plan & dimensional control", consultant: "Civil Engineer" });
+    rows.push({
+      requirement: "Grading, drainage & detention design",
+      consultant: "Civil Engineer",
+    });
+    rows.push({ requirement: "Drainage / detention study", consultant: "Civil Engineer" });
+    rows.push({ requirement: "SWPPP / erosion control", consultant: "Civil Engineer" });
+    rows.push({
+      requirement: "Landscape & tree preservation plan",
+      consultant: "Landscape Architect",
+    });
+    rows.push({ requirement: "Site photometrics", consultant: "Electrical Engineer" });
+  }
+  if (has("building")) {
+    rows.push({ requirement: "Architectural drawings & code analysis", consultant: "Architect" });
+    rows.push({
+      requirement: "Structural drawings & calculations",
+      consultant: "Structural Engineer",
+    });
+    rows.push({ requirement: "MEP drawings", consultant: "MEP Engineer" });
+    rows.push({
+      requirement: "Energy code compliance (COMcheck)",
+      consultant: "MEP Engineer / Architect",
+    });
+    rows.push({ requirement: "Accessibility (TAS/ADA) review", consultant: "Architect / RAS" });
+  }
+  if (has("fire")) {
+    rows.push({ requirement: "Fire lane & hydrant exhibit", consultant: "Civil Engineer" });
+    rows.push({
+      requirement: "Sprinkler / alarm design (deferred)",
+      consultant: "Fire Protection Engineer",
+    });
+  }
+  if (has("utility")) {
+    rows.push({
+      requirement: "Will-serve / service availability letters",
+      consultant: "Owner / Utility Consultant",
+    });
+    rows.push({ requirement: "Impact fee worksheet", consultant: "Civil Engineer" });
+  }
+  return rows;
+}
+
 export function checklistCompletion(items: { required: boolean; done?: boolean }[]): number {
   const req = items.filter((i) => i.required);
   if (req.length === 0) return 0;
@@ -91,6 +156,44 @@ export function checklistCompletion(items: { required: boolean; done?: boolean }
 }
 
 export type PreAppItem = { label: string; required: boolean };
+
+// Pre-application meeting agenda + what to bring (PRD 1.1.14).
+export type PreAppMeeting = {
+  agenda: string[];
+  bring: string[];
+  questionsToAsk: string[];
+};
+
+export function preApplicationMeeting(jur: JurisdictionInfo, permits: PermitItem[]): PreAppMeeting {
+  const hasPlat = permits.some((p) => p.id === "plat");
+  return {
+    agenda: [
+      "Introduce the project: location, use, size, and intended schedule.",
+      "Confirm zoning classification, overlays, and whether the use is permitted by right.",
+      `Confirm the ${jur.authority} submittal path and which departments review which permits.`,
+      "Review required studies (drainage, traffic, environmental) and known site constraints.",
+      hasPlat
+        ? "Confirm platting status, required dedications, and whether it can run parallel with civil."
+        : "Confirm the site plan vs. building permit submittal sequence.",
+      "Identify impact / capital-recovery fees and when they are due.",
+      "Agree on next steps and the point of contact on each side.",
+    ],
+    bring: [
+      "Project summary sheet (address, parcel ID, use, building area, floors)",
+      "Concept site plan or bubble diagram",
+      "Aerial / location exhibit",
+      "Preliminary utility availability information",
+      "List of your design team of record (Architect, Civil, Structural, MEP)",
+      "Written list of questions",
+    ],
+    questionsToAsk: [
+      "Is a pre-application or Development Review Committee meeting required or optional?",
+      "Current first-review turnaround, and how many cycles are typical for this project type?",
+      "Any moratoria, pending code changes, or utility capacity issues affecting this site?",
+      "Which items can be deferred submittals (e.g. sprinkler / alarm)?",
+    ],
+  };
+}
 
 export function preApplicationChecklist(
   jur: JurisdictionInfo,

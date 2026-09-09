@@ -44,6 +44,8 @@ export type PermitRow = {
   permit_number: string | null;
   expiry_date: string | null;
   review_round: number;
+  current_reviewer: string | null;
+  est_next_update: string | null;
   sort: number;
 };
 
@@ -55,6 +57,7 @@ export type ChecklistRow = {
   grp: string;
   required: boolean;
   done: boolean;
+  kind: string; // 'submission' | 'pre_app'
 };
 
 export type NotificationRow = {
@@ -128,15 +131,36 @@ export async function saveProjectFromIntake(
     if (pe) throw pe;
   }
 
-  const checklistRows = analysis.permits.flatMap((p) =>
+  type ChecklistInsert = {
+    project_id: string;
+    permit_key: string | null;
+    label: string;
+    grp: string;
+    required: boolean;
+    kind: string;
+  };
+  const checklistRows: ChecklistInsert[] = analysis.permits.flatMap((p) =>
     buildPermitChecklist(p, analysis.jurisdiction).map((c) => ({
       project_id: projectId,
       permit_key: p.id,
       label: c.label,
-      grp: c.group,
+      grp: c.group as string,
       required: c.required,
+      kind: "submission",
     })),
   );
+  // Pre-application checklist items (PRD 1.1.13) — seeded as tracked rows so
+  // completion can be checked off, not just displayed.
+  for (const item of analysis.preApp) {
+    checklistRows.push({
+      project_id: projectId,
+      permit_key: null,
+      label: item.label,
+      grp: "Pre-application",
+      required: item.required,
+      kind: "pre_app",
+    });
+  }
   if (checklistRows.length) {
     await supabase.from("project_checklist_items").insert(checklistRows);
   }
@@ -213,12 +237,53 @@ export async function updatePermit(
   patch: Partial<
     Pick<
       PermitRow,
-      "status" | "submitted_at" | "approved_at" | "permit_number" | "expiry_date" | "review_round"
+      | "status"
+      | "submitted_at"
+      | "approved_at"
+      | "permit_number"
+      | "expiry_date"
+      | "review_round"
+      | "current_reviewer"
+      | "est_next_update"
+      | "approval_doc_url"
     >
   >,
 ): Promise<void> {
   const { error } = await supabase.from("project_permits").update(patch).eq("id", permitId);
   if (error) throw error;
+  // Fire an in-app notification on a status change (PRD 1.1.27).
+  if (patch.status) {
+    const { data } = await supabase
+      .from("project_permits")
+      .select("project_id, name")
+      .eq("id", permitId)
+      .maybeSingle();
+    const row = data as { project_id: string; name: string } | null;
+    if (row) {
+      const { permitStatusNotification, addNotification } = await import("./notifications");
+      const n = permitStatusNotification(row.name, patch.status);
+      await addNotification({ projectId: row.project_id, ...n });
+    }
+  }
+}
+
+// Existing-project detection (PRD 1.1.7.H) — has this user already analyzed the
+// same address?
+export async function findProjectByAddress(
+  userId: string,
+  address: string | null | undefined,
+): Promise<ProjectRow | null> {
+  if (!address) return null;
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", userId)
+    .ilike("address", address.trim())
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return (data as ProjectRow) ?? null;
 }
 
 export async function setChecklistDone(itemId: string, done: boolean): Promise<void> {

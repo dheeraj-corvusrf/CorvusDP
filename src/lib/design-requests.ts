@@ -10,6 +10,7 @@ export type DesignRequestRow = {
   county: string | null;
   scope: string | null;
   sector: string | null;
+  site_area: string | null;
   building_area: string | null;
   floors: string | null;
   rooms: string | null;
@@ -17,6 +18,8 @@ export type DesignRequestRow = {
   special_requirements: string | null;
   brief: DesignBrief | null;
   stage: string;
+  approved_at: string | null;
+  consultation_requested_at: string | null;
   created_at: string;
 };
 
@@ -32,6 +35,7 @@ export async function saveDesignRequest(userId: string, intake: DpIntakeState): 
       county: intake.property.county ?? null,
       scope: intake.design.scope ?? null,
       sector: intake.design.sector ?? null,
+      site_area: intake.design.approxSiteArea ?? null,
       building_area: intake.design.buildingArea ?? null,
       floors: intake.design.floors ?? null,
       rooms: intake.design.rooms ?? null,
@@ -44,6 +48,23 @@ export async function saveDesignRequest(userId: string, intake: DpIntakeState): 
     .single();
   if (error) throw error;
   return (data as { id: string }).id;
+}
+
+// PRD 1.2.8.A / 1.2.8.B — record the customer's intent before the paid work.
+export async function approveDesignBrief(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("design_requests")
+    .update({ approved_at: new Date().toISOString(), stage: "approved" })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function requestDesignConsultation(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("design_requests")
+    .update({ consultation_requested_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
 }
 
 export async function getActiveDesignRequest(userId: string): Promise<DesignRequestRow | null> {

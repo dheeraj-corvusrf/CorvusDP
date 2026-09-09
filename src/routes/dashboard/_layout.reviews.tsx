@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveProjectBundle } from "@/hooks/use-project";
+import { updatePermit } from "@/lib/projects";
 import {
   listReviewComments,
   addReviewComment,
@@ -32,7 +33,7 @@ const PRIORITY_TONE: Record<string, "gray" | "amber" | "red" | "blue"> = {
 };
 
 function Reviews() {
-  const { loading, hasProject, project, bundle } = useActiveProjectBundle();
+  const { loading, hasProject, project, bundle, refetch } = useActiveProjectBundle();
   const projectId = project?.id;
   const comments = useQuery({
     queryKey: ["review-comments", projectId],
@@ -75,19 +76,53 @@ function Reviews() {
 
   return (
     <div className="grid gap-5">
-      <Section title="Submission & review status">
-        <div className="grid gap-2 sm:grid-cols-2">
+      <Section
+        title="Submission & review status"
+        subtitle="Reviewer and next-update estimate per permit (PRD 1.1.24)."
+      >
+        <div className="grid gap-2">
           {permits.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between rounded-lg border border-border p-3 text-sm"
-            >
-              <span className="font-medium">{p.name}</span>
-              <div className="flex items-center gap-2">
-                <Pill tone={permitStatusTone(p.status)}>{humanize(p.status)}</Pill>
-                {p.review_round > 0 && (
-                  <span className="text-xs text-muted-foreground">round {p.review_round + 1}</span>
-                )}
+            <div key={p.id} className="rounded-lg border border-border p-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{p.name}</span>
+                <div className="flex items-center gap-2">
+                  <Pill tone={permitStatusTone(p.status)}>{humanize(p.status)}</Pill>
+                  {p.review_round > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      round {p.review_round + 1}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                <label className="flex items-center gap-1">
+                  Current reviewer:
+                  <input
+                    defaultValue={p.current_reviewer ?? ""}
+                    placeholder="add"
+                    onBlur={async (e) => {
+                      if (e.target.value !== (p.current_reviewer ?? "")) {
+                        await updatePermit(p.id, { current_reviewer: e.target.value });
+                        refetch();
+                      }
+                    }}
+                    className="min-w-0 flex-1 rounded border border-input bg-background px-1"
+                  />
+                </label>
+                <label className="flex items-center gap-1">
+                  Est. next update:
+                  <input
+                    type="date"
+                    defaultValue={p.est_next_update ?? ""}
+                    onBlur={async (e) => {
+                      if (e.target.value !== (p.est_next_update ?? "")) {
+                        await updatePermit(p.id, { est_next_update: e.target.value || null });
+                        refetch();
+                      }
+                    }}
+                    className="rounded border border-input bg-background px-1"
+                  />
+                </label>
               </div>
             </div>
           ))}

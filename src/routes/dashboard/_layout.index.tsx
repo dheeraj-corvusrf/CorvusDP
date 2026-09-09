@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useActiveProjectBundle } from "@/hooks/use-project";
 import { markNotificationRead } from "@/lib/projects";
 import { roadmapStatus } from "@/lib/roadmap";
@@ -33,6 +34,7 @@ function DashboardHome() {
 
   return (
     <div className="grid gap-5">
+      <WelcomeWalkthrough />
       <Section
         title={project.name ?? project.address ?? "Your project"}
         subtitle={`${project.jurisdiction ?? "Jurisdiction pending"} · ${humanize(project.track)}`}
@@ -119,6 +121,77 @@ function DashboardHome() {
           </ul>
         )}
       </Section>
+    </div>
+  );
+}
+
+// Welcome walkthrough (PRD 1.1.7.K) — shown once, dismissible.
+const WALKTHROUGH_KEY = "corvusdp.walkthroughDismissed";
+
+function WelcomeWalkthrough() {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(WALKTHROUGH_KEY) === "1";
+    } catch {
+      return true;
+    }
+  });
+  if (dismissed) return null;
+
+  function close() {
+    try {
+      localStorage.setItem(WALKTHROUGH_KEY, "1");
+    } catch {
+      /* no-op */
+    }
+    setDismissed(true);
+  }
+
+  return (
+    <div className="card-elev brand-gradient-soft p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-lg font-semibold">Welcome to CorvusDP</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Here's how the permitting dashboard works:
+          </p>
+        </div>
+        <button
+          onClick={close}
+          className="text-sm text-muted-foreground hover:text-foreground"
+          aria-label="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
+      <ul className="mt-3 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+        <li>
+          • <span className="text-foreground">Permits / Roadmap</span> — every permit, its agency,
+          and the order to submit
+        </li>
+        <li>
+          • <span className="text-foreground">Site Data</span> — utility & constraint summary +
+          pre-app meeting agenda
+        </li>
+        <li>
+          • <span className="text-foreground">Checklist / Prepare</span> — what to submit and who
+          owns it
+        </li>
+        <li>
+          • <span className="text-foreground">Reviews / City</span> — track cycles, comments, and
+          jurisdiction contact
+        </li>
+        <li>
+          • <span className="text-foreground">Approvals</span> — approved permits, clearance, and
+          expiry
+        </li>
+        <li>
+          • <span className="text-foreground">Alerts</span> — a log of every status change
+        </li>
+      </ul>
+      <button onClick={close} className="btn-outline mt-4 text-sm">
+        Got it
+      </button>
     </div>
   );
 }

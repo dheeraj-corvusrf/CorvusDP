@@ -55,9 +55,9 @@ alongside the shared CorvusRE hub. So:
 
 ## Branches
 
-| Branch                | Purpose                     |
-| --------------------- | --------------------------- |
-| `main`                | stable / release            |
-| `qa`                  | pre-release verification    |
+| Branch                | Purpose                                             |
+| --------------------- | --------------------------------------------------- |
+| `main`                | stable / release                                    |
+| `qa`                  | pre-release verification                            |
 | `dev`                 | integration; source the CorvusPT deploy builds from |
-| `feature-dev-dheeraj` | working branch              |
+| `feature-dev-dheeraj` | working branch                                      |
