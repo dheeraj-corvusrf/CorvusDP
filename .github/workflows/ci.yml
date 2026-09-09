@@ -1,0 +1,38 @@
+name: CI
+
+# CorvusDP is NOT hosted from this repo. It is published only at
+# https://corvusre.com/corvusdp/ — built and assembled by the CorvusPT repo's
+# deploy workflow, which checks out this repo's `dev` branch. This workflow just
+# guards that the tests pass and the production build still succeeds, so a break
+# here is caught before it blocks the CorvusPT deploy.
+
+on:
+  push:
+    branches: [dev, feature-dev-dheeraj]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Pure permitting / zoning / fee / timeline / design math.
+      - run: npm run test
+
+      # Same build the CorvusPT deploy runs (SITE_BASE=/corvusdp/), so a
+      # prerender/base regression surfaces here first.
+      - run: npm run build
+        env:
+          SITE_BASE: /corvusdp/
+          VITE_SUPABASE_URL: https://xzhilwwlfajxhklkiteb.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_zR_OjbkQ3Nto25iGKdX9mg_jRbUDWVF
