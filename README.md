@@ -46,12 +46,14 @@ publish its own GitHub Pages site.
 The `corvusre.com` custom domain belongs to the **CorvusPT** repo; its deploy
 workflow checks out this repo's `dev` branch, runs
 `SITE_BASE=/corvusdp/ npm run build`, and drops the output into `site/corvusdp/`
-alongside the shared CorvusRE hub. So:
+alongside the shared CorvusRE hub.
 
-- Merging to **this** repo's `dev` does not deploy anything on its own — it just
-  runs [CI](.github/workflows/ci.yml) (tests + the same production build).
-- To publish the change, the **CorvusPT** deploy has to run too — push to
-  CorvusPT `dev`, or dispatch its "Deploy to GitHub Pages" workflow.
+**Push to `dev` here → `corvusre.com/corvusdp/` redeploys automatically.**
+[CI](.github/workflows/ci.yml) runs the tests + the production build, and on a
+green `dev` push it dispatches the CorvusPT deploy. That cross-repo call uses the
+`CORVUSPT_DEPLOY_TOKEN` repo secret (a token with **Actions: read+write** on the
+CorvusPT repo — the default `GITHUB_TOKEN` can't reach another repo). If auto-deploy
+stops, that secret has expired; replace it with a fresh fine-grained PAT.
 
 ## Branches
 

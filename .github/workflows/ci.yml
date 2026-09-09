@@ -1,10 +1,12 @@
 name: CI
 
-# CorvusDP is NOT hosted from this repo. It is published only at
-# https://corvusre.com/corvusdp/ — built and assembled by the CorvusPT repo's
-# deploy workflow, which checks out this repo's `dev` branch. This workflow just
-# guards that the tests pass and the production build still succeeds, so a break
-# here is caught before it blocks the CorvusPT deploy.
+# CorvusDP is published only at https://corvusre.com/corvusdp/ — that domain
+# lives on the CorvusPT repo, whose deploy workflow checks out this repo's `dev`
+# branch, builds it, and assembles it into the shared CorvusRE hub.
+#
+# This workflow: (1) guards that the tests + the production build pass, and
+# (2) on a green push to `dev`, kicks the CorvusPT deploy so corvusre.com/corvusdp/
+# always tracks this repo's `dev`.
 
 on:
   push:
@@ -36,3 +38,17 @@ jobs:
           SITE_BASE: /corvusdp/
           VITE_SUPABASE_URL: https://xzhilwwlfajxhklkiteb.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_zR_OjbkQ3Nto25iGKdX9mg_jRbUDWVF
+
+      # Push to dev + build passed -> trigger the CorvusPT deploy, which rebuilds
+      # https://corvusre.com/corvusdp/ from this repo's dev branch. Needs a token
+      # with Actions:write on the CorvusPT repo (repo secret CORVUSPT_DEPLOY_TOKEN);
+      # the default GITHUB_TOKEN can't dispatch another repo's workflow.
+      - name: Trigger corvusre.com/corvusdp/ deploy (CorvusPT)
+        if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CORVUSPT_DEPLOY_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/dheeraj-corvusrf/CorvusPT/actions/workflows/deploy.yml/dispatches \
+            -d '{"ref":"dev"}' \
+            --fail-with-body
