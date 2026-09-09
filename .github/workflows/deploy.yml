@@ -33,14 +33,12 @@ jobs:
       # browser. A failure here blocks the deploy, same as a failed build.
       - run: npm run test
 
-      # Builds at base "/" and prerenders every route to static HTML. CorvusDP
-      # must be served from a domain root (GitHub Pages custom domain, an
-      # <account>.github.io site, or Cloudflare/Netlify) — see README. The
-      # current TanStack Start static prerender cannot resolve routes under a
-      # non-root base path, so a project-site subpath (…github.io/CorvusDP/) is
-      # not a valid target without a reverse proxy.
+      # Prerenders every route to static HTML under the Pages project-site base
+      # path. Override SITE_BASE via a repo Variable only if the site moves to a
+      # custom domain / root (then set it to "/").
       - run: npm run build
         env:
+          SITE_BASE: ${{ vars.SITE_BASE || '/CorvusDP/' }}
           # Supabase anon/publishable key is meant to be public (it ships in the
           # client bundle regardless) — real access control is the RLS policies
           # in supabase/schema.sql. Point these at CorvusDP's OWN Supabase

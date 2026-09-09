@@ -40,18 +40,17 @@ once in its SQL editor, then set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
 
 ## Deployment
 
-Pushing to `dev` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
-it runs the tests, builds the static site (every route prerendered to HTML —
-Nitro/server build disabled), adds a `404.html` SPA fallback, and publishes via
-`actions/deploy-pages`.
+Live at **https://dheeraj-corvusrf.github.io/CorvusDP/** (GitHub Pages, source =
+GitHub Actions).
 
-**The app is built at base `/` and must be served from a domain root** — a
-GitHub Pages **custom domain** (set the `PAGES_CNAME` repo variable), an
-`<account>.github.io` site, or Cloudflare Pages / Netlify. It cannot be served
-from a project-site subpath (`…github.io/CorvusDP/`): the current TanStack Start
-static prerenderer produces zero HTML under a non-root base. To place it under
-`corvusre.com/corvusdp/`, put a path-rewriting reverse proxy in front rather than
-changing the base.
+Pushing to `dev` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
+tests → build (`SITE_BASE=/CorvusDP/`, every route prerendered to HTML, no
+server) → `404.html` SPA fallback → `actions/deploy-pages`.
+
+One-time repo setup: **Settings → Pages → Source → GitHub Actions**, and add repo
+**Variables** `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (CorvusDP's own
+project). Moving to a custom domain / root later: set repo Variable `SITE_BASE`
+to `/` and add `PAGES_CNAME`.
 
 ## Branches
 

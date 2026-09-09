@@ -6,21 +6,20 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-// CorvusDP deploys at the root of its GitHub Pages site (base "/"). SITE_BASE is
-// left as an override hook, but note: the current TanStack Start prerender
-// crawler cannot resolve routes under a non-root base with the static
-// (`nitro: false`) handler — a non-root base produces zero prerendered HTML. If
-// CorvusDP ever needs to live under `corvusre.com/corvusdp/`, put a
-// path-rewrite / reverse proxy in front rather than setting a non-root base
-// here, until that upstream issue is fixed.
+// Base path the app is served under. Defaults to "/" for local dev; the deploy
+// workflow passes "/CorvusDP/" for the GitHub Pages project site. (Prerender
+// works fine under a non-root base — the earlier "zero HTML" symptom was just a
+// port clash from a strictPort `preview` server, now removed below.)
 const base = process.env.SITE_BASE || "/";
 
 export default defineConfig({
-  // Local dev/preview run on 8082 (CorvusPT owns 8080/8081 in this workspace).
+  // Local dev runs on 8082. `preview` is left on Vite's default port — the
+  // build-time prerenderer spins up its own throwaway preview server and a
+  // fixed strictPort there collides with a running dev server and aborts the
+  // prerender (zero HTML emitted).
   vite: {
     base,
     server: { port: 8082, strictPort: true },
-    preview: { port: 8082, strictPort: true },
   },
   tanstackStart: {
     server: { entry: "server" },
