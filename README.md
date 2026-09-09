@@ -40,17 +40,18 @@ once in its SQL editor, then set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
 
 ## Deployment
 
-Live at **https://dheeraj-corvusrf.github.io/CorvusDP/** (GitHub Pages, source =
-GitHub Actions).
+Hosted **only** at **https://corvusre.com/corvusdp/**. This repo does **not**
+publish its own GitHub Pages site.
 
-Pushing to `dev` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
-tests → build (`SITE_BASE=/CorvusDP/`, every route prerendered to HTML, no
-server) → `404.html` SPA fallback → `actions/deploy-pages`.
+The `corvusre.com` custom domain belongs to the **CorvusPT** repo; its deploy
+workflow checks out this repo's `dev` branch, runs
+`SITE_BASE=/corvusdp/ npm run build`, and drops the output into `site/corvusdp/`
+alongside the shared CorvusRE hub. So:
 
-One-time repo setup: **Settings → Pages → Source → GitHub Actions**, and add repo
-**Variables** `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (CorvusDP's own
-project). Moving to a custom domain / root later: set repo Variable `SITE_BASE`
-to `/` and add `PAGES_CNAME`.
+- Merging to **this** repo's `dev` does not deploy anything on its own — it just
+  runs [CI](.github/workflows/ci.yml) (tests + the same production build).
+- To publish the change, the **CorvusPT** deploy has to run too — push to
+  CorvusPT `dev`, or dispatch its "Deploy to GitHub Pages" workflow.
 
 ## Branches
 
@@ -58,5 +59,5 @@ to `/` and add `PAGES_CNAME`.
 | --------------------- | --------------------------- |
 | `main`                | stable / release            |
 | `qa`                  | pre-release verification    |
-| `dev`                 | integration; deploy trigger |
+| `dev`                 | integration; source the CorvusPT deploy builds from |
 | `feature-dev-dheeraj` | working branch              |
