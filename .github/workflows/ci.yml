@@ -38,6 +38,8 @@ jobs:
           SITE_BASE: /corvusdp/
           VITE_SUPABASE_URL: https://xzhilwwlfajxhklkiteb.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_zR_OjbkQ3Nto25iGKdX9mg_jRbUDWVF
+          # Optional — address suggestions fall back to keyless Nominatim if unset.
+          VITE_GOOGLE_MAPS_API_KEY: ${{ vars.VITE_GOOGLE_MAPS_API_KEY }}
 
       # Push to dev + build passed -> trigger the CorvusPT deploy, which rebuilds
       # https://corvusre.com/corvusdp/ from this repo's dev branch. Needs a token

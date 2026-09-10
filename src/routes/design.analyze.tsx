@@ -14,6 +14,7 @@ import { captureLead } from "@/lib/leads";
 import { saveDesignRequest } from "@/lib/design-requests";
 import { useAuth } from "@/lib/auth";
 import { StepRail, Field, inputCls, Section, Stat } from "@/components/dp-ui";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
 export const Route = createFileRoute("/design/analyze")({
   head: () => ({ meta: [{ title: "Design Brief — CorvusDP" }] }),
@@ -91,12 +92,25 @@ function DesignAnalyze() {
       {step === 0 && (
         <Section title="Property" subtitle="Where is the project?">
           <div className="grid gap-4">
-            <Field label="Property address or city / region" required>
-              <input
-                className={inputCls}
+            <Field
+              label="Property address or city / region"
+              required
+              hint="Pick a suggestion to fill in county and state automatically."
+            >
+              <AddressAutocomplete
+                ariaLabel="Property address"
+                placeholder="123 Lone Star Trail, Celina, TX"
                 value={state.property.address ?? state.property.city ?? ""}
-                onChange={(e) =>
-                  patch({ property: { address: e.target.value, city: e.target.value } })
+                onChange={(v) => patch({ property: { address: v, city: v } })}
+                onSelect={(pick) =>
+                  patch({
+                    property: {
+                      address: pick.formatted,
+                      city: pick.city ?? pick.formatted,
+                      county: pick.county ?? state.property.county,
+                      state: pick.state ?? state.property.state,
+                    },
+                  })
                 }
               />
             </Field>
