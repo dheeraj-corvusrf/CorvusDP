@@ -30,6 +30,9 @@ type Suggestion = {
   id: string;
   label: string;
   pick: PlacePick;
+  /** set for a Google prediction — used to fetch the structured breakdown
+   *  (incl. county) via a Place Details follow-up call */
+  googlePlaceId?: string;
 };
 
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
@@ -133,11 +136,72 @@ async function fetchGoogle(query: string, signal: AbortSignal): Promise<Suggesti
     .map((p) => ({
       id: p.placeId,
       label: p.text!.text,
-      // Google Autocomplete predictions don't carry structured parts; the
-      // wizard can still parse "…, City, ST 00000" from the label, and the
-      // manual county field stays available.
+      googlePlaceId: p.placeId,
+      // Provisional (label-parsed) until the Place Details call on select
+      // upgrades it with the real city / county / state / zip.
       pick: parseFromLabel(p.text!.text),
     }));
+}
+
+// Last-resort county lookup — geocode the chosen address on Nominatim and read
+// its `county`. Used when the primary provider (Google) didn't return one.
+async function nominatimCounty(address: string): Promise<PlacePick> {
+  const params = new URLSearchParams({
+    format: "jsonv2",
+    addressdetails: "1",
+    countrycodes: "us",
+    limit: "1",
+    q: address,
+  });
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+    if (!res.ok) return {};
+    const data = (await res.json()) as NominatimResult[];
+    const a = data[0]?.address;
+    if (!a) return {};
+    return {
+      county: a.county?.replace(/ County$/i, ""),
+      city: a.city || a.town || a.village || a.hamlet || a.municipality || undefined,
+      state: abbrState(a.state),
+      postalCode: a.postcode,
+    };
+  } catch {
+    return {};
+  }
+}
+
+type GoogleComponent = { longText?: string; shortText?: string; types?: string[] };
+
+// Place Details — the only Google surface that returns county
+// (administrative_area_level_2). Called once, when a suggestion is picked.
+async function fetchGooglePlaceDetails(placeId: string): Promise<PlacePick | null> {
+  const res = await fetch(
+    `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
+    {
+      headers: {
+        "X-Goog-Api-Key": GOOGLE_API_KEY as string,
+        "X-Goog-FieldMask": "formattedAddress,addressComponents",
+      },
+    },
+  );
+  if (!res.ok) return null;
+  const data = (await res.json()) as {
+    formattedAddress?: string;
+    addressComponents?: GoogleComponent[];
+  };
+  const comps = data.addressComponents ?? [];
+  const get = (type: string) => comps.find((c) => c.types?.includes(type));
+  const city = get("locality")?.longText || get("postal_town")?.longText || get("sublocality")?.longText;
+  const county = get("administrative_area_level_2")?.longText?.replace(/ County$/i, "");
+  const state = get("administrative_area_level_1")?.shortText;
+  const postalCode = get("postal_code")?.longText;
+  return {
+    formatted: (data.formattedAddress ?? "").replace(/, USA$/, ""),
+    city,
+    county,
+    state,
+    postalCode,
+  };
 }
 
 function parseFromLabel(label: string): PlacePick {
@@ -169,6 +233,7 @@ export function AddressAutocomplete({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const skipNextFetch = useRef(false);
   const listId = useId();
@@ -193,9 +258,10 @@ export function AddressAutocomplete({
           try {
             out = await fetchGoogle(q, ctrl.signal);
           } catch {
-            out = await fetchNominatim(q, ctrl.signal);
+            /* referrer-blocked, quota, API not enabled — fall through */
           }
-        } else {
+        }
+        if (out.length === 0) {
           out = await fetchNominatim(q, ctrl.signal);
         }
         setSuggestions(out);
@@ -221,12 +287,46 @@ export function AddressAutocomplete({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  function choose(s: Suggestion) {
+  async function choose(s: Suggestion) {
     skipNextFetch.current = true;
-    onChange(s.pick.formatted);
-    onSelect(s.pick);
+    onChange(s.label);
     setOpen(false);
     setSuggestions([]);
+    // Nominatim already has the full breakdown inline. For a Google
+    // prediction, one Place Details call fills in city / county / state / zip.
+    if (!s.googlePlaceId) {
+      onSelect(s.pick);
+      return;
+    }
+    setResolving(true);
+    try {
+      const detail = await fetchGooglePlaceDetails(s.googlePlaceId).catch(() => null);
+      const merged: PlacePick = {
+        formatted: detail?.formatted || s.pick.formatted,
+        city: detail?.city ?? s.pick.city,
+        county: detail?.county ?? s.pick.county,
+        state: abbrState(detail?.state) ?? s.pick.state,
+        postalCode: detail?.postalCode ?? s.pick.postalCode,
+      };
+      // Google's Place Details still didn't give a county — fall back to a
+      // Nominatim geocode of the address for it.
+      if (!merged.county && merged.formatted) {
+        const extra = await nominatimCounty(merged.formatted);
+        merged.county = extra.county ?? merged.county;
+        merged.city = merged.city ?? extra.city;
+        merged.state = merged.state ?? extra.state;
+        merged.postalCode = merged.postalCode ?? extra.postalCode;
+      }
+      if (merged.formatted && merged.formatted !== s.label) {
+        skipNextFetch.current = true;
+        onChange(merged.formatted);
+      }
+      onSelect(merged);
+    } catch {
+      onSelect(s.pick);
+    } finally {
+      setResolving(false);
+    }
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
@@ -296,9 +396,9 @@ export function AddressAutocomplete({
           ))}
         </ul>
       )}
-      {loading && value.trim().length >= MIN_QUERY_LENGTH && (
+      {(loading || resolving) && value.trim().length >= MIN_QUERY_LENGTH && (
         <span className="pointer-events-none absolute right-2 top-2.5 text-xs text-muted-foreground">
-          …
+          {resolving ? "filling in…" : "…"}
         </span>
       )}
     </div>
