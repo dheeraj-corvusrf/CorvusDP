@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Lock, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, ArrowLeft, Lock, Loader2 } from "lucide-react";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   readDpIntake,
   updateDpIntake,
@@ -189,14 +190,27 @@ function PropertyStep({
     >
       {!manual ? (
         <div className="grid gap-4">
-          <Field label="Property address" required>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <input
-                className={inputCls}
+          <Field
+            label="Property address"
+            required
+            hint="Start typing and pick a suggestion — city, county and state fill in automatically."
+          >
+            <div className={inputCls}>
+              <AddressAutocomplete
+                ariaLabel="Property address"
                 placeholder="123 Lone Star Trail, Celina, TX 75009"
                 value={p.address ?? ""}
-                onChange={(e) => patch({ property: { address: e.target.value } })}
+                onChange={(v) => patch({ property: { address: v } })}
+                onSelect={(pick) =>
+                  patch({
+                    property: {
+                      address: pick.formatted,
+                      city: pick.city ?? p.city,
+                      county: pick.county ?? p.county,
+                      state: pick.state ?? p.state ?? "TX",
+                    },
+                  })
+                }
               />
             </div>
           </Field>

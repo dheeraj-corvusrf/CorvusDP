@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Field, inputCls, Section } from "@/components/dp-ui";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { supabase } from "@/lib/supabase";
 import { readDpIntake } from "@/lib/dp-intake";
 
@@ -66,10 +67,11 @@ function Construction() {
         <Section title="Project basics">
           <div className="grid gap-4">
             <Field label="Property address">
-              <input
-                className={inputCls}
+              <AddressAutocomplete
+                ariaLabel="Property address"
                 value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                onChange={(v) => setForm({ ...form, address: v })}
+                onSelect={(pick) => setForm({ ...form, address: pick.formatted })}
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
