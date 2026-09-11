@@ -826,3 +826,113 @@ header .container-page {
     animation: savings-sheen-sweep 6s ease-in-out infinite;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Marketing polish — "Apple-style" surfaces + motion for the public pages
+   (/, /design, /construction). Decorative only; every motion piece is gated
+   behind prefers-reduced-motion, and the layout is unaffected when it's off.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Layered radial blooms — one amber, one navy — on a near-white ground. The
+   hero/section backdrop that reads as "this app's colour" without a hard fill. */
+@utility gradient-mesh {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60rem 40rem at 78% -10%, oklch(0.62 0.155 58 / 0.16), transparent 60%),
+    radial-gradient(48rem 40rem at 8% 8%, oklch(0.4 0.13 255 / 0.12), transparent 55%),
+    radial-gradient(40rem 30rem at 50% 120%, oklch(0.62 0.155 58 / 0.08), transparent 60%);
+}
+
+/* Frosted panel — translucent, blurred, hairline border, gentle depth. */
+@utility glass {
+  background: color-mix(in oklch, var(--card) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  border-radius: 1.1rem;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 20px 50px -28px oklch(0.18 0.06 250 / 0.28);
+}
+
+/* Brand-gradient text fill (navy → amber). */
+@utility text-gradient {
+  background: linear-gradient(115deg, oklch(0.29 0.08 255), oklch(0.58 0.16 55));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Spring lift on hover — the Apple-ish "card floats toward you" feel. */
+@utility hover-lift {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s ease;
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -30px oklch(0.18 0.06 250 / 0.35);
+    border-color: color-mix(in oklch, var(--accent) 40%, var(--border));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+/* Soft vertical drift for decorative blurred blobs behind a hero. */
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) scale(1.06);
+  }
+}
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-blob {
+    animation: blob-drift 14s ease-in-out infinite;
+  }
+}
+
+/* Thin gradient hairline used to connect numbered process steps. */
+@utility rule-gradient {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--accent) 55%, transparent),
+    transparent
+  );
+}
+
+/* Slow sheen sweep across a featured band (reuses the savings-sheen idea). */
+@keyframes band-sheen {
+  0% {
+    transform: translateX(-60%) skewX(-14deg);
+    opacity: 0;
+  }
+  20%,
+  40% {
+    opacity: 0.35;
+  }
+  70%,
+  100% {
+    transform: translateX(240%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .band-sheen {
+    animation: band-sheen 7s ease-in-out infinite;
+  }
+}
