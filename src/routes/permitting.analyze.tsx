@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Lock, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Lock, Loader2, Sparkles, RotateCcw } from "lucide-react";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import {
   readDpIntake,
@@ -10,6 +10,7 @@ import {
   type PropertySector,
 } from "@/lib/dp-intake";
 import { runPermittingAnalysis } from "@/lib/analysis";
+import { generateFeasibilitySummary, type FeasibilitySummary } from "@/lib/ai";
 import { statusLabel } from "@/lib/zoning";
 import { groupByCategory } from "@/lib/permits";
 import { currency, currencyRange, weeksLabel, monthsFromWeeks } from "@/lib/format";
@@ -129,6 +130,8 @@ function Analyze() {
       {step === 4 && analysis && (
         <ReportStep
           analysis={analysis}
+          property={state.property}
+          project={state.project}
           signedIn={!!user}
           saving={saving}
           error={error}
@@ -552,8 +555,100 @@ function FeasibilityStep({
   );
 }
 
+// On-demand — the analysis it narrates is already computed for free
+// client-side, so this only calls the AI when the visitor actually wants the
+// plain-English version, not automatically on every report view.
+function AiFeasibilitySummary({
+  analysis,
+  property,
+  project,
+}: {
+  analysis: ReturnType<typeof runPermittingAnalysis>;
+  property: DpIntakeState["property"];
+  project: DpIntakeState["project"];
+}) {
+  const [summary, setSummary] = useState<FeasibilitySummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function generate() {
+    setLoading(true);
+    setErr(null);
+    try {
+      const result = await generateFeasibilitySummary({
+        address: property.address,
+        city: property.city,
+        county: property.county,
+        state: property.state,
+        intent: project.intent,
+        sector: project.sector,
+        zoning: analysis.zoning,
+        feasibility: analysis.feasibility,
+        permits: analysis.permits.map((p) => ({ name: p.name, category: p.category })),
+        complexity: analysis.complexity,
+        constraints: {
+          criticalWarnings: analysis.constraints.criticalWarnings,
+          utilities: analysis.constraints.utilities,
+        },
+      });
+      setSummary(result);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Couldn't generate the AI summary. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Section
+      title="AI feasibility summary"
+      subtitle="A plain-English read of the analysis below — generated on demand, verify with your jurisdiction."
+    >
+      {!summary && !loading && (
+        <button className="btn-accent" onClick={generate}>
+          <Sparkles className="h-4 w-4" /> Generate AI summary
+        </button>
+      )}
+      {loading && (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Reading your analysis…
+        </p>
+      )}
+      {err && <p className="text-sm text-destructive">{err}</p>}
+      {summary && (
+        <div className="grid gap-3">
+          <p className="text-sm leading-relaxed">{summary.narrative}</p>
+          {summary.keyRisks.length > 0 && (
+            <ul className="grid gap-1 text-sm">
+              {summary.keyRisks.map((r, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-accent">•</span>
+                  <span className="text-muted-foreground">{r}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="rounded-lg bg-secondary/60 p-3 text-sm">
+            <span className="font-semibold">Next step: </span>
+            {summary.recommendedNextStep}
+          </p>
+          <button
+            className="btn-outline w-fit text-xs"
+            onClick={generate}
+            disabled={loading}
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Regenerate
+          </button>
+        </div>
+      )}
+    </Section>
+  );
+}
+
 function ReportStep({
   analysis,
+  property,
+  project,
   signedIn,
   saving,
   error,
@@ -561,6 +656,8 @@ function ReportStep({
   onPrimary,
 }: {
   analysis: ReturnType<typeof runPermittingAnalysis>;
+  property: DpIntakeState["property"];
+  project: DpIntakeState["project"];
   signedIn: boolean;
   saving: boolean;
   error: string | null;
@@ -572,6 +669,8 @@ function ReportStep({
 
   return (
     <div className="grid gap-5">
+      <AiFeasibilitySummary analysis={analysis} property={property} project={project} />
+
       <Section
         title="Required permits"
         subtitle={`${permits.length} permits · ${complexity.level} complexity · ~${complexity.estimatedReviewCycles} review cycle(s)`}

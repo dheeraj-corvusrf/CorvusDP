@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Sparkles, Loader2 } from "lucide-react";
 import { useActiveProjectBundle } from "@/hooks/use-project";
 import { updatePermit } from "@/lib/projects";
 import {
@@ -19,6 +20,7 @@ import {
   inputCls,
 } from "@/components/dp-ui";
 import { dateShort } from "@/lib/format";
+import { translateReviewComment } from "@/lib/ai";
 
 export const Route = createFileRoute("/dashboard/_layout/reviews")({
   head: () => ({ meta: [{ title: "Reviews — CorvusDP" }] }),
@@ -50,6 +52,8 @@ function Reviews() {
     priority: "medium",
   });
   const [saving, setSaving] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translateErr, setTranslateErr] = useState<string | null>(null);
 
   if (loading) return <Loading />;
   if (!hasProject || !project) return <EmptyProject />;
@@ -72,6 +76,30 @@ function Reviews() {
     setForm({ original: "", plain: "", why: "", action: "", responsible: "", priority: "medium" });
     setSaving(false);
     comments.refetch();
+  }
+
+  async function autoFillWithAi() {
+    if (!form.original.trim()) return;
+    setTranslating(true);
+    setTranslateErr(null);
+    try {
+      const t = await translateReviewComment({
+        comment: form.original,
+        permitName: permits[0]?.name,
+      });
+      setForm((f) => ({
+        ...f,
+        plain: t.plainLanguage,
+        why: t.whyItMatters,
+        action: t.requiredAction,
+        responsible: t.responsible,
+        priority: t.priority,
+      }));
+    } catch (e) {
+      setTranslateErr(e instanceof Error ? e.message : "Couldn't translate that comment.");
+    } finally {
+      setTranslating(false);
+    }
   }
 
   return (
@@ -202,6 +230,22 @@ function Reviews() {
               onChange={(e) => setForm({ ...form, original: e.target.value })}
             />
           </Field>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="btn-outline w-fit text-xs disabled:opacity-50"
+              disabled={!form.original.trim() || translating}
+              onClick={autoFillWithAi}
+            >
+              {translating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              Auto-fill with AI
+            </button>
+            {translateErr && <span className="text-xs text-destructive">{translateErr}</span>}
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Plain-language explanation">
               <input

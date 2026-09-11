@@ -826,3 +826,223 @@ header .container-page {
     animation: savings-sheen-sweep 6s ease-in-out infinite;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Marketing polish — "Apple-style" surfaces + motion for the public pages
+   (/, /design, /construction). Decorative only; every motion piece is gated
+   behind prefers-reduced-motion, and the layout is unaffected when it's off.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Layered radial blooms — one amber, one navy — on a near-white ground. The
+   hero/section backdrop that reads as "this app's colour" without a hard fill. */
+@utility gradient-mesh {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60rem 40rem at 78% -10%, oklch(0.62 0.155 58 / 0.16), transparent 60%),
+    radial-gradient(48rem 40rem at 8% 8%, oklch(0.4 0.13 255 / 0.12), transparent 55%),
+    radial-gradient(40rem 30rem at 50% 120%, oklch(0.62 0.155 58 / 0.08), transparent 60%);
+}
+
+/* Frosted panel — translucent, blurred, hairline border, gentle depth. */
+@utility glass {
+  background: color-mix(in oklch, var(--card) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  border-radius: 1.1rem;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 20px 50px -28px oklch(0.18 0.06 250 / 0.28);
+}
+
+/* Brand-gradient text fill (navy → amber). */
+@utility text-gradient {
+  background: linear-gradient(115deg, oklch(0.29 0.08 255), oklch(0.58 0.16 55));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Spring lift on hover — the Apple-ish "card floats toward you" feel. */
+@utility hover-lift {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s ease;
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -30px oklch(0.18 0.06 250 / 0.35);
+    border-color: color-mix(in oklch, var(--accent) 40%, var(--border));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+/* Soft vertical drift for decorative blurred blobs behind a hero. */
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) scale(1.06);
+  }
+}
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-blob {
+    animation: blob-drift 14s ease-in-out infinite;
+  }
+}
+
+/* Thin gradient hairline used to connect numbered process steps. */
+@utility rule-gradient {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--accent) 55%, transparent),
+    transparent
+  );
+}
+
+/* Slow sheen sweep across a featured band (reuses the savings-sheen idea). */
+@keyframes band-sheen {
+  0% {
+    transform: translateX(-60%) skewX(-14deg);
+    opacity: 0;
+  }
+  20%,
+  40% {
+    opacity: 0.35;
+  }
+  70%,
+  100% {
+    transform: translateX(240%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .band-sheen {
+    animation: band-sheen 7s ease-in-out infinite;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Drafting / blueprint texture system — the marketing pages lean on
+   architectural-drawing language (graph paper, dimension lines, contours)
+   rather than stock photography, so the look stays on-brand, sharp at any
+   size, and adds zero image weight or external requests.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Fine graph-paper grid. Two layered gradients (minor + major lines),
+   radially masked so it dissolves toward the edges instead of ending on a
+   hard rectangle. Sits under a hero's content. */
+@utility blueprint-grid {
+  background-image:
+    linear-gradient(oklch(0.29 0.08 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.29 0.08 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(oklch(0.29 0.08 255 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.29 0.08 255 / 0.09) 1px, transparent 1px);
+  background-size:
+    28px 28px,
+    28px 28px,
+    140px 140px,
+    140px 140px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(80% 70% at 50% 40%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(80% 70% at 50% 40%, #000 40%, transparent 100%);
+}
+
+/* Dotted grid — lighter texture for secondary section bands. */
+@utility dot-grid {
+  background-image: radial-gradient(oklch(0.29 0.08 255 / 0.12) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* Topographic contour lines — a survey-map motif for section backgrounds. */
+@utility topo-lines {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='400'%20viewBox='0%200%201200%20400'%3E%3Cg%20fill='none'%20stroke='%23233a6b'%20stroke-opacity='0.08'%20stroke-width='1.5'%3E%3Cpath%20d='M-20%2080C180%2020%20360%20140%20600%2090S1020%20-10%201220%2060'/%3E%3Cpath%20d='M-20%20140C180%2080%20360%20200%20600%20150S1020%2050%201220%20120'/%3E%3Cpath%20d='M-20%20200C180%20140%20360%20260%20600%20210S1020%20110%201220%20180'/%3E%3Cpath%20d='M-20%20260C180%20200%20360%20320%20600%20270S1020%20170%201220%20240'/%3E%3Cpath%20d='M-20%20320C180%20260%20360%20380%20600%20330S1020%20230%201220%20300'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Subtle film grain — breaks up flat gradient fills so a hero reads as a
+   textured surface rather than a plain wash. Apply to an absolutely
+   positioned overlay span. */
+.grain {
+  background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='140'%20height='140'%20filter='url(%23n)'%20opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Animated stroke draw-on for the blueprint illustrations. Each pathed
+   element gets its own dash length via --len and a per-element delay via
+   --d (set inline in the component). Content is always visible for
+   reduced-motion users — the lines simply appear fully drawn. */
+@media (prefers-reduced-motion: no-preference) {
+  .draw path,
+  .draw line,
+  .draw circle,
+  .draw rect,
+  .draw polyline {
+    stroke-dasharray: var(--len, 1200);
+    stroke-dashoffset: var(--len, 1200);
+    animation: draw-on 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+  .draw [data-fill] {
+    opacity: 0;
+    animation: fade-fill 0.8s ease forwards;
+    animation-delay: var(--d, 0ms);
+  }
+}
+@keyframes draw-on {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes fade-fill {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slow parallax bob for a hero illustration — distinct from hero-blob so the
+   two don't move in lockstep. */
+@media (prefers-reduced-motion: no-preference) {
+  .illo-float {
+    animation: illo-float 9s ease-in-out infinite;
+  }
+}
+@keyframes illo-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+/* Spec-sheet caption used under an illustration (monospaced, drafting-label
+   feel). */
+.spec-label {
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
