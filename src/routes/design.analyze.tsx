@@ -1,14 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Lock, Sparkles, RotateCcw } from "lucide-react";
 import {
   readDpIntake,
   updateDpIntake,
   type DpIntakeState,
   type DesignScope,
+  type DesignRequirements,
   type PropertySector,
 } from "@/lib/dp-intake";
-import { generateDesignBrief, scopeLabel } from "@/lib/design";
+import { generateDesignBrief, scopeLabel, type DesignBrief } from "@/lib/design";
+import { generateDesignNarrative, type DesignNarrative } from "@/lib/ai";
 import { currencyRange, weeksLabel } from "@/lib/format";
 import { captureLead } from "@/lib/leads";
 import { saveDesignRequest } from "@/lib/design-requests";
@@ -265,6 +267,8 @@ function DesignAnalyze() {
 
       {step === 3 && brief && (
         <div className="grid gap-5">
+          <AiDesignNarrative design={d} brief={brief} />
+
           <Section
             title="What's included in your design"
             subtitle={`${scopeLabel(d.scope)} · ${d.sector ?? "commercial"}`}
@@ -357,5 +361,80 @@ function DesignAnalyze() {
         </div>
       )}
     </div>
+  );
+}
+
+// On-demand — same pattern as permitting's AiFeasibilitySummary: the brief
+// underneath is already fully computed for free, this only calls the AI
+// when the visitor wants it narrated as prose.
+function AiDesignNarrative({ design, brief }: { design: DesignRequirements; brief: DesignBrief }) {
+  const [narrative, setNarrative] = useState<DesignNarrative | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function generate() {
+    setLoading(true);
+    setErr(null);
+    try {
+      const result = await generateDesignNarrative({
+        scope: design.scope,
+        sector: design.sector,
+        approxSiteArea: design.approxSiteArea,
+        buildingArea: design.buildingArea,
+        floors: design.floors,
+        rooms: design.rooms,
+        functionalRequirements: design.functionalRequirements,
+        specialRequirements: design.specialRequirements,
+        inclusions: brief.inclusions,
+        budgetLow: brief.budgetLow,
+        budgetHigh: brief.budgetHigh,
+        timelineWeeksMin: brief.totalWeeksMin,
+        timelineWeeksMax: brief.totalWeeksMax,
+        costDrivers: brief.costDrivers,
+      });
+      setNarrative(result);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Couldn't generate the AI narrative. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Section
+      title="AI design narrative"
+      subtitle="A written scope narrative from the brief below — generated on demand."
+    >
+      {!narrative && !loading && (
+        <button className="btn-accent" onClick={generate}>
+          <Sparkles className="h-4 w-4" /> Generate AI narrative
+        </button>
+      )}
+      {loading && (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Writing your brief…
+        </p>
+      )}
+      {err && <p className="text-sm text-destructive">{err}</p>}
+      {narrative && (
+        <div className="grid gap-3">
+          <p className="text-sm font-medium">{narrative.scopeSummary}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{narrative.narrative}</p>
+          {narrative.designConsiderations.length > 0 && (
+            <ul className="grid gap-1 text-sm">
+              {narrative.designConsiderations.map((c, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-accent">•</span>
+                  <span className="text-muted-foreground">{c}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button className="btn-outline w-fit text-xs" onClick={generate} disabled={loading}>
+            <RotateCcw className="h-3.5 w-3.5" /> Regenerate
+          </button>
+        </div>
+      )}
+    </Section>
   );
 }
