@@ -81,7 +81,15 @@ export function AskAiWidget() {
         // whole chat panel down to a sliver on anything narrower than a
         // desktop window. Two independent fixed elements have no such
         // ancestor to go wrong.
-        <div className="glass fixed inset-x-4 bottom-20 z-50 flex max-h-[75vh] flex-col overflow-hidden sm:inset-x-auto sm:right-6 sm:bottom-24 sm:h-[28rem] sm:w-96">
+        //
+        // Deliberately card-elev (opaque), not the decorative `glass`
+        // treatment used on marketing pages: this floats over real
+        // dashboard content (fee tables, permit statuses), and glass's
+        // translucent background + blur let that content show through
+        // right behind the assistant's own text, hurting legibility on
+        // both. A functional overlay needs a solid background regardless
+        // of what's behind it.
+        <div className="card-elev fixed inset-x-4 bottom-20 z-50 flex max-h-[75vh] flex-col overflow-hidden sm:inset-x-auto sm:right-6 sm:bottom-24 sm:h-[28rem] sm:w-96">
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent/15 text-accent">
