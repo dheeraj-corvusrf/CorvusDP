@@ -71,9 +71,17 @@ export function AskAiWidget() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 flex justify-end sm:inset-x-auto sm:right-6 sm:bottom-6">
+    <>
       {open && (
-        <div className="pointer-events-auto glass mb-3 flex h-[28rem] w-full max-w-sm flex-col overflow-hidden sm:absolute sm:bottom-16 sm:right-0">
+        // Anchored directly to the viewport with an explicit width — not a
+        // percentage of the toggle button below (see the fixed-position
+        // sibling below): a shared flex-row wrapper around both elements
+        // previously made this panel's "w-full" resolve against a container
+        // that itself shrank to the button's tiny width, collapsing the
+        // whole chat panel down to a sliver on anything narrower than a
+        // desktop window. Two independent fixed elements have no such
+        // ancestor to go wrong.
+        <div className="glass fixed inset-x-4 bottom-20 z-50 flex max-h-[75vh] flex-col overflow-hidden sm:inset-x-auto sm:right-6 sm:bottom-24 sm:h-[28rem] sm:w-96">
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent/15 text-accent">
@@ -96,7 +104,7 @@ export function AskAiWidget() {
             </button>
           </div>
 
-          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -148,11 +156,11 @@ export function AskAiWidget() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={open ? "Close CorvusDP Assistant" : "Open CorvusDP Assistant"}
-        className="btn-accent pointer-events-auto h-12 w-12 rounded-full !p-0 shadow-lg sm:h-14 sm:w-auto sm:rounded-full sm:!px-5"
+        className="btn-accent fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full !p-0 shadow-lg sm:bottom-6 sm:right-6 sm:h-14 sm:w-auto sm:rounded-full sm:!px-5"
       >
         {open ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
         <span className="hidden sm:inline">{open ? "Close" : "Ask AI"}</span>
       </button>
-    </div>
+    </>
   );
 }
