@@ -12,6 +12,7 @@ import {
   MessagesSquare,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SitePlanScene } from "@/components/illustrations/SitePlanScene";
 
 export const Route = createFileRoute("/permitting/")({
   head: () => ({
@@ -47,30 +48,43 @@ const OUTPUTS = [
 function PermittingOverview() {
   return (
     <div className="overflow-clip">
-      <section className="gradient-mesh relative">
+      <section className="gradient-mesh relative isolate">
+        <div className="blueprint-grid pointer-events-none absolute inset-0" aria-hidden />
+        <span className="grain absolute inset-0" aria-hidden />
         <span className="hero-blob left-[-7rem] top-[-3rem] h-80 w-80 bg-[oklch(0.7_0.16_58)]" aria-hidden />
         <span
           className="hero-blob right-[-8rem] top-24 h-96 w-96 bg-[oklch(0.55_0.16_255)]"
           style={{ animationDelay: "-6s" }}
           aria-hidden
         />
-        <div className="container-page relative py-20 sm:py-24">
-          <span className="badge-soft">Permitting &amp; Entitlement</span>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
-            From one address to a <span className="text-gradient">complete permitting roadmap.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            Enter the property and your project scope. CorvusDP retrieves jurisdiction and zoning
-            context, checks feasibility, then lays out every permit you'll need, who reviews it, what
-            to submit, the order to submit in, the fees, and how long it should take.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/permitting/analyze" className="btn-accent text-base">
-              Start Permitting Analysis <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/design" className="btn-outline text-base">
-              Need design first?
-            </Link>
+        <div className="container-page relative grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <span className="badge-soft">Permitting &amp; Entitlement</span>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+              From one address to a <span className="text-gradient">complete permitting roadmap.</span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+              Enter the property and your project scope. CorvusDP retrieves jurisdiction and zoning
+              context, checks feasibility, then lays out every permit you'll need, who reviews it,
+              what to submit, the order to submit in, the fees, and how long it should take.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/permitting/analyze" className="btn-accent text-base">
+                Start Permitting Analysis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/design" className="btn-outline text-base">
+                Need design first?
+              </Link>
+            </div>
+          </div>
+          <div className="illo-float">
+            <div className="glass p-4 sm:p-6">
+              <SitePlanScene />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="spec-label">Dwg. C-101 · Site plan</span>
+                <span className="spec-label">Zone C-2</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -97,8 +111,9 @@ function PermittingOverview() {
         </div>
       </section>
 
-      <section className="border-y border-border/60 bg-secondary/30">
-        <div className="container-page py-16 sm:py-20">
+      <section className="relative isolate border-y border-border/60 bg-secondary/30">
+        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden />
+        <div className="container-page relative py-16 sm:py-20">
           <ScrollReveal>
             <h2 className="font-serif text-2xl font-semibold sm:text-3xl">In your report</h2>
           </ScrollReveal>

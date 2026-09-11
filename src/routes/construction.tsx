@@ -13,6 +13,7 @@ import {
 import { Field, inputCls, Section } from "@/components/dp-ui";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { ConstructionScene } from "@/components/illustrations/ConstructionScene";
 import { supabase } from "@/lib/supabase";
 import { readDpIntake } from "@/lib/dp-intake";
 
@@ -133,27 +134,40 @@ function Construction() {
   return (
     <div className="overflow-clip">
       {/* Hero */}
-      <section className="gradient-mesh relative">
+      <section className="gradient-mesh relative isolate">
+        <div className="blueprint-grid pointer-events-none absolute inset-0" aria-hidden />
+        <span className="grain absolute inset-0" aria-hidden />
         <span className="hero-blob left-[-7rem] top-[-3rem] h-80 w-80 bg-[oklch(0.7_0.16_58)]" aria-hidden />
         <span
           className="hero-blob right-[-8rem] top-24 h-96 w-96 bg-[oklch(0.55_0.16_255)]"
           style={{ animationDelay: "-5s" }}
           aria-hidden
         />
-        <div className="container-page relative py-20 sm:py-24">
-          <span className="badge-soft-warning">Early access</span>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
-            The build phase, <span className="text-gradient">organized.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            Once permits are in hand, the risk moves to coordination — inspections, submittals,
-            deliveries, and a dozen subcontractors on one schedule. The CorvusDP construction
-            workspace keeps all of it in one place, carrying the pre-construction clearance straight
-            from the permitting side.
-          </p>
-          <a href="#tell-us" className="btn-accent mt-8 inline-flex text-base">
-            Tell us about your build <ArrowRight className="h-4 w-4" />
-          </a>
+        <div className="container-page relative grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <span className="badge-soft-warning">Early access</span>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+              The build phase, <span className="text-gradient">organized.</span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+              Once permits are in hand, the risk moves to coordination — inspections, submittals,
+              deliveries, and a dozen subcontractors on one schedule. The CorvusDP construction
+              workspace keeps all of it in one place, carrying the pre-construction clearance
+              straight from the permitting side.
+            </p>
+            <a href="#tell-us" className="btn-accent mt-8 inline-flex text-base">
+              Tell us about your build <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="illo-float">
+            <div className="glass p-4 sm:p-6">
+              <ConstructionScene />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="spec-label">Site log · Live</span>
+                <span className="spec-label">Phase 3 · Structure</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -183,8 +197,9 @@ function Construction() {
       </section>
 
       {/* Pre-construction readiness */}
-      <section className="border-y border-border/60 bg-secondary/30">
-        <div className="container-page py-16 sm:py-20">
+      <section className="relative isolate border-y border-border/60 bg-secondary/30">
+        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden />
+        <div className="container-page relative py-16 sm:py-20">
           <div className="grid gap-10 lg:grid-cols-2">
             <ScrollReveal>
               <h2 className="font-serif text-2xl font-semibold sm:text-3xl">

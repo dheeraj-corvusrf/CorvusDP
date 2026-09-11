@@ -13,6 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { BlueprintScene } from "@/components/illustrations/BlueprintScene";
 import {
   Accordion,
   AccordionContent,
@@ -118,31 +119,44 @@ function DesignOverview() {
   return (
     <div className="overflow-clip">
       {/* Hero */}
-      <section className="gradient-mesh relative">
+      <section className="gradient-mesh relative isolate">
+        <div className="blueprint-grid pointer-events-none absolute inset-0" aria-hidden />
+        <span className="grain absolute inset-0" aria-hidden />
         <span className="hero-blob right-[-7rem] top-[-3rem] h-80 w-80 bg-[oklch(0.7_0.16_58)]" aria-hidden />
         <span
           className="hero-blob left-[-8rem] top-28 h-96 w-96 bg-[oklch(0.55_0.16_255)]"
           style={{ animationDelay: "-7s" }}
           aria-hidden
         />
-        <div className="container-page relative py-20 sm:py-24">
-          <span className="badge-soft">Design</span>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
-            Design, <span className="text-gradient">scoped and priced</span> before you commit.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            Give CorvusDP the property and your program. Get back what the design covers, a
-            room-level space plan, a phased timeline from concept to permit set, and a fee basis by
-            discipline — with the cost drivers explained. It's the decision document that comes
-            before a design contract.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/design/analyze" className="btn-accent text-base">
-              Start a Design Brief <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/permitting" className="btn-outline text-base">
-              Permitting instead
-            </Link>
+        <div className="container-page relative grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <span className="badge-soft">Design</span>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
+              Design, <span className="text-gradient">scoped and priced</span> before you commit.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+              Give CorvusDP the property and your program. Get back what the design covers, a
+              room-level space plan, a phased timeline from concept to permit set, and a fee basis by
+              discipline — with the cost drivers explained. It's the decision document that comes
+              before a design contract.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/design/analyze" className="btn-accent text-base">
+                Start a Design Brief <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/permitting" className="btn-outline text-base">
+                Permitting instead
+              </Link>
+            </div>
+          </div>
+          <div className="illo-float">
+            <div className="glass p-4 sm:p-6">
+              <BlueprintScene />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="spec-label">Dwg. A-201 · Front elevation</span>
+                <span className="spec-label">Permit set</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -175,8 +189,9 @@ function DesignOverview() {
       </section>
 
       {/* Process */}
-      <section className="border-y border-border/60 bg-secondary/30">
-        <div className="container-page py-16 sm:py-20">
+      <section className="relative isolate border-y border-border/60 bg-secondary/30">
+        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden />
+        <div className="container-page relative py-16 sm:py-20">
           <ScrollReveal>
             <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
               Concept → development → permit set

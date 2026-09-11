@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { BlueprintScene } from "@/components/illustrations/BlueprintScene";
+import { SitePlanScene } from "@/components/illustrations/SitePlanScene";
+import { ConstructionScene } from "@/components/illustrations/ConstructionScene";
+import type { ComponentType } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -77,52 +81,66 @@ function Landing() {
   return (
     <div className="overflow-clip">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="gradient-mesh relative">
+      <section className="gradient-mesh relative isolate">
+        <div className="blueprint-grid pointer-events-none absolute inset-0" aria-hidden />
+        <span className="grain absolute inset-0" aria-hidden />
         <span className="hero-blob left-[-6rem] top-[-4rem] h-72 w-72 bg-[oklch(0.7_0.16_58)]" aria-hidden />
         <span
           className="hero-blob right-[-8rem] top-24 h-96 w-96 bg-[oklch(0.55_0.16_255)]"
           style={{ animationDelay: "-6s" }}
           aria-hidden
         />
-        <div className="container-page relative py-20 sm:py-28">
-          <span className="badge-soft">
-            <Sparkles className="h-3.5 w-3.5" /> One of the five CorvusRE doors
-          </span>
-          <h1 className="mt-5 max-w-4xl font-serif text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-            Permitting and design for real estate development,
-            <span className="text-gradient"> done with AI.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Every jurisdiction has its own requirements, timelines, and reviewers. CorvusDP turns an
-            address and a project scope into a clear permitting roadmap and a design brief — following
-            local best practice, whatever the project size.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link to="/permitting" className="btn-accent text-base">
-              Start Permitting Analysis <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/design" className="btn-outline text-base">
-              Start a Design Brief
-            </Link>
+        <div className="container-page relative grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <span className="badge-soft">
+              <Sparkles className="h-3.5 w-3.5" /> One of the five CorvusRE doors
+            </span>
+            <h1 className="mt-5 max-w-4xl font-serif text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+              Permitting and design for real estate development,
+              <span className="text-gradient"> done with AI.</span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+              Every jurisdiction has its own requirements, timelines, and reviewers. CorvusDP turns an
+              address and a project scope into a clear permitting roadmap and a design brief —
+              following local best practice, whatever the project size.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link to="/permitting" className="btn-accent text-base">
+                Start Permitting Analysis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/design" className="btn-outline text-base">
+                Start a Design Brief
+              </Link>
+            </div>
+
+            <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6">
+              {[
+                { n: 50, suffix: "", label: "US states in scope" },
+                { n: 20, suffix: "+", label: "permit types mapped" },
+                { n: 10, suffix: " min", label: "to a first roadmap" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <dd className="font-serif text-3xl font-semibold sm:text-4xl">
+                    <AnimatedNumber value={s.n} />
+                    {s.suffix}
+                  </dd>
+                  <dt className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+                    {s.label}
+                  </dt>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6">
-            {[
-              { n: 50, suffix: "", label: "US states in scope" },
-              { n: 20, suffix: "+", label: "permit types mapped" },
-              { n: 10, suffix: " min", label: "to a first roadmap" },
-            ].map((s) => (
-              <div key={s.label}>
-                <dd className="font-serif text-3xl font-semibold sm:text-4xl">
-                  <AnimatedNumber value={s.n} />
-                  {s.suffix}
-                </dd>
-                <dt className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
-                  {s.label}
-                </dt>
+          <div className="illo-float relative">
+            <div className="glass p-4 sm:p-6">
+              <BlueprintScene />
+              <div className="mt-3 flex items-center justify-between">
+                <span className="spec-label">Dwg. A-201 · Elevation</span>
+                <span className="spec-label">Scale 1:96</span>
               </div>
-            ))}
-          </dl>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -165,9 +183,50 @@ function Landing() {
         </div>
       </section>
 
+      {/* ── Drawing gallery ──────────────────────────────────────────── */}
+      <section className="relative isolate border-y border-border/60 bg-secondary/20">
+        <div className="topo-lines pointer-events-none absolute inset-0 opacity-70" aria-hidden />
+        <div className="container-page relative py-16 sm:py-20">
+          <ScrollReveal>
+            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
+              One project, drawn end to end
+            </h2>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              The same site moves from a permitting layout to an elevation to a structure on site —
+              CorvusDP carries the context across each door.
+            </p>
+          </ScrollReveal>
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {(
+              [
+                { to: "/permitting", Scene: SitePlanScene, label: "Site plan", tag: "C-2 · setbacks" },
+                { to: "/design", Scene: BlueprintScene, label: "Elevation", tag: "Permit set" },
+                {
+                  to: "/construction",
+                  Scene: ConstructionScene,
+                  label: "On site",
+                  tag: "Phase 3 · structure",
+                },
+              ] as { to: string; Scene: ComponentType<{ className?: string }>; label: string; tag: string }[]
+            ).map(({ to, Scene, label, tag }, i) => (
+              <ScrollReveal key={to} delay={i * 90}>
+                <Link to={to} className="glass hover-lift group block p-5">
+                  <Scene />
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="spec-label">{label}</span>
+                    <span className="spec-label group-hover:text-accent">{tag}</span>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Process ──────────────────────────────────────────────────── */}
-      <section className="border-y border-border/60 bg-secondary/30">
-        <div className="container-page py-16 sm:py-20">
+      <section className="relative isolate border-b border-border/60 bg-secondary/30">
+        <div className="dot-grid pointer-events-none absolute inset-0" aria-hidden />
+        <div className="container-page relative py-16 sm:py-20">
           <ScrollReveal>
             <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
               Input → Analysis → Plan → Approval
